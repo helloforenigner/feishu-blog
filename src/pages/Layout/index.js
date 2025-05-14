@@ -78,6 +78,15 @@ export const BlogLayout = () => {
         <div className='title'>Blog管理系统</div>
         <div className="logo" />
         <div className="user-info">
+          {role === 0 && (
+            <button
+              className="back-home-btn"
+              style={{ marginRight: 16, padding: '4px 12px', borderRadius: 6, border: 'none', background: '#409EFF', color: '#fff', cursor: 'pointer', fontSize: 14 }}
+              onClick={() => navigate('/home')}
+            >
+              返回首页
+            </button>
+          )}
           <span className="user-name"><Link to="/user-center">{name}</Link></span>
           <span className="user-logout">
             <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消"

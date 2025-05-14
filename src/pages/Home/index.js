@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { getBlogListAPI } from '@/apis/content';
 import blogListMock from '@/mock/blogList';
+import userList from '@/mock/userList';
 import './index.scss';
 
 // 切换此变量即可使用 mock 数据或真实接口
@@ -14,6 +15,11 @@ const IndexPage = () => {
     });
     // 博客列表 state
     const [blogList, setBlogList] = useState([]);
+
+    // 获取当前登录用户头像
+    const account = localStorage.getItem('userAccount');
+    const currentUser = userList.find(u => u.account === account);
+    const avatarSrc = currentUser ? currentUser.avatar : '/selfimg/avatar1.jpeg';
 
     // 拉取博客数据
     useEffect(() => {
@@ -57,11 +63,12 @@ const IndexPage = () => {
         e.preventDefault();
         // 判断是否登录，假设 localStorage 里有 token 字段
         const token = localStorage.getItem('token');
-        if (token) {
-            window.location.href = '/user-center';
-        } else {
-            window.location.href = '/'; // 登录页
-        }
+        // if (token) {
+        //     window.location.href = '/user-center';
+        // } else {
+        //     window.location.href = '/login'; // 未登录跳转登录页
+        // }
+        window.location.href = '/user-center';
     };
 
     return (
@@ -78,7 +85,7 @@ const IndexPage = () => {
                             管理
                         </button>
                         <a href="/user-center" className="avatar-link" aria-label="个人主页" onClick={handleAvatarClick}>
-                            <img src="/selfimg/avatar.jpg" alt="User Avatar" className="avatar" />
+                            <img src={avatarSrc} alt="User Avatar" className="avatar" />
                         </a>
                         <button
                             className="mode-toggle"
