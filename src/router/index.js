@@ -8,6 +8,7 @@ import AccountManager from "@/pages/Account";
 import AbnormalDetect from "@/pages/Abnormal";
 import Publish from "@/pages/Publish";
 import UserCenter from "@/pages/UserCenter";
+import HomePage from '@/pages/Home';
 
 const router = createBrowserRouter([
     {
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
     {
         path: '/register',
         element: <Register />
+    },
+    {
+        path: '/home',
+        element: <HomePage />
     },
     {
         path: '/user-center',

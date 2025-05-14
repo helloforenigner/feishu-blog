@@ -31,7 +31,13 @@ const ContentManager = () => {
             //请求数据
             //...reqData
             const res = await getBlogListAPI(reqData)
-            setBlogList(res.data.data.results)
+            if (res && res.data && res.data.data && res.data.data.results) {
+                setBlogList(res.data.data.results)
+            } else {
+                // Handle the case where the data is not in the expected format
+                console.error("Error: Unexpected response structure from getBlogListAPI", res);
+                setBlogList([]); // Set to empty array or handle error appropriately
+            }
             //console.log(res.data.data.results)
         }
         //调用函数

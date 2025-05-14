@@ -59,11 +59,38 @@
 
         }
 
+        .user-profile-box {
+            width: 450px;
+            margin: 4px auto;
+            text-align: left;
+            min-height: 80px;
+            border: 0px solid #f0f0f0;
+            border-radius: 4px;
+            background: transparent;
+            padding: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
 
+        .user-profile-content {
+            /* 保持原有样式 */
+            margin-left: 0;
+        }
+
+        .user-profile-content textarea {
+            /* 让编辑时的文本域和只读div样式一致 */
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            resize: none;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1.5;
+            min-height: 64px;
+        }
 
     }
-
-
 
     .ant-card-head-title {
         text-align: center;
@@ -84,6 +111,11 @@
     }
 
     .float-button-return {
+        right: -50px;
+    }
+
+    .float-button-save {
+        top: 140px;
         right: -50px;
     }
 

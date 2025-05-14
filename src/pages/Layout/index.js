@@ -38,7 +38,40 @@ export const BlogLayout = () => {
   }
 
   //从redux中获取用户信息
-  const name = useSelector(state => state.user.userInfo.name)
+  const userInfo = useSelector(state => state.user.userInfo)
+  const name = userInfo.name
+  // 优先从 localStorage 读取 role（本地模拟登录），否则用 redux
+  let role = localStorage.getItem('userRole')
+  if (role === null || role === undefined) {
+    role = userInfo.role
+  } else {
+    // 兼容字符串/数字
+    role = Number(role)
+  }
+
+  // 菜单项定义
+  const menuItems = [
+    {
+      icon: <HomeOutlined />,
+      key: '/layout',
+      label: '内容管理'
+    }
+  ]
+  if (role === 1) {
+    menuItems.push(
+      {
+        icon: <DiffOutlined />,
+        key: '/layout/accountManager',
+        label: '账号管理'
+      },
+      {
+        icon: <EditOutlined />,
+        key: '/layout/abnormalDetect',
+        label: '异常感知'
+      }
+    )
+  }
+
   return (
     <Layout>
       <Header className="header">
@@ -63,17 +96,8 @@ export const BlogLayout = () => {
             onClick={onMenuClick}
             selectedKeys={selectedkey}
             style={{ height: '100%', borderRight: 0 }}
-          >
-            <Menu.Item icon={<HomeOutlined />} key="/layout">
-              内容管理
-            </Menu.Item>
-            <Menu.Item icon={<DiffOutlined />} key="/layout/accountManager">
-              账号管理
-            </Menu.Item>
-            <Menu.Item icon={<EditOutlined />} key="/layout/abnormalDetect">
-              异常感知
-            </Menu.Item>
-          </Menu>
+            items={menuItems}
+          />
         </Sider>
         <Layout className="layout-content" style={{ padding: 20 }}>
           <Outlet />
