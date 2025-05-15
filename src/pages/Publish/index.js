@@ -204,8 +204,23 @@ const Publish = () => {
 
     const onFinish = async (values) => {
         console.log(values)
-        const res = await createBlogAPI(values)
-        setShowModal(true)
+        if (blogId) {
+            // 编辑模式，写回 mock 数据
+            const blogList = (await import('@/mock/blogList')).default;
+            const idx = blogList.findIndex(item => String(item.id) === String(blogId));
+            if (idx !== -1) {
+                blogList[idx] = {
+                    ...blogList[idx],
+                    ...values,
+                    date: new Date().toISOString().slice(0, 10),
+                    status: 0
+                };
+            }
+            setShowModal(true);
+        } else {
+            const res = await createBlogAPI(values)
+            setShowModal(true)
+        }
     }
     return (
         <div className="publish">
@@ -257,7 +272,7 @@ const Publish = () => {
 
                     <Form.Item wrapperCol={{ offset: 4 }}>
                         <Button size="large" type="primary" htmlType="submit">
-                            新建Blog
+                            {blogId ? '编辑Blog' : '新建Blog'}
                         </Button>
                     </Form.Item>
                 </Form>

@@ -22,6 +22,34 @@ export const Login = () => {
         navigate('/register')
     }
 
+    // 测试账号密码
+    const testUsers = [
+        { account: 'admin', password: '123456', role: 1 },
+        { account: 'user', password: '111111', role: 0 }
+    ];
+
+    // TODO: 后期如需和后端交互获取用户信息，删除 testUsers 相关逻辑，改为调用 loginAPI，并根据后端返回的用户信息（如 role/token）进行跳转和存储。
+    // 示例：
+    // const res = await loginAPI(values);
+    // if (res && res.data && res.data.data) {
+    //     const { role, token } = res.data.data;
+    //     localStorage.setItem('userRole', role);
+    //     localStorage.setItem('token', token);
+    //     if (role === 1 || role === '1') {
+    //         navigate('/layout');
+    //     } else {
+    //         navigate('/home');
+    //     }
+    //     return;
+    // }
+    // message.error('账号或密码错误!');
+    // setErrorCnt(errorCnt + 1);
+    // if (errorCnt > 3) {
+    //     setShowModal(true);
+    //     setShowSlider(true);
+    // }
+    // 其余 testUsers 相关代码可全部移除。
+
     //登录角色切换
     const loginRoleChange = (e) => {
         console.log(e.target.value)
@@ -33,9 +61,19 @@ export const Login = () => {
     }
     //登录逻辑
     const onFinish = async (values) => {
-        if (values.account == 'admin' && values.password == '123456') {
-            setErrorCnt(0)
-            navigate('/layout')
+        // 测试账号密码判断
+        const found = testUsers.find(u => u.account === values.account && u.password === values.password);
+        if (found) {
+            setErrorCnt(0);
+            // 存储角色到 localStorage，供 layout 页面使用
+            localStorage.setItem('userRole', found.role);
+            // 普通用户跳转 /home，超管跳转 /layout
+            if (found.role === 1 || found.role === '1') {
+                navigate('/layout');
+            } else {
+                navigate('/home');
+            }
+            return;
         } else {
             message.error("账号或密码错误!")
             setErrorCnt(errorCnt + 1)

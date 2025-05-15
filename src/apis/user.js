@@ -32,3 +32,15 @@ export function getUserInfoAPI() {
         method: 'GET'
     })
 }
+
+//3、修改密码
+export function changePasswordAPI({ oldPassword, newPassword }) {
+    return request({
+        url: '/user/changePassword',
+        method: 'POST',
+        data: {
+            oldPassword,
+            newPassword
+        }
+    });
+}
