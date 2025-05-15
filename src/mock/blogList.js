@@ -6,8 +6,9 @@ const blogList = [
         content: '这是第一篇测试博客内容',
         excerpt: '这是第一篇测试博客内容',
         date: '2025-05-14',
-        author: 'admin'
-
+        author: 'admin',
+        account: 'admin',
+        status: 0  // 0:未发布 1:已发布
     },
     {
         id: 2,
@@ -15,7 +16,9 @@ const blogList = [
         content: '这是第二篇测试博客内容',
         excerpt: '这是第二篇测试博客内容',
         date: '2025-05-13',
-        author: 'user'
+        author: 'user',
+        account: 'user',
+        status: 1  // 0:未发布 1:已发布
     }
 ];
 export default blogList;

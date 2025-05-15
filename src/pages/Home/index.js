@@ -102,7 +102,7 @@ const IndexPage = () => {
                 {blogList.map(post => (
                     <article className="post-item" key={post.id}>
                         <h2 className="post-title">
-                            <a href={post.url}>{post.title}</a>
+                            <a href={`/blog/${post.id}`}>{post.title}</a>
                         </h2>
                         <p className="post-excerpt">{post.excerpt || (post.content ? post.content.slice(0, 80) + '...' : '')}</p>
                         <div className="post-meta">
