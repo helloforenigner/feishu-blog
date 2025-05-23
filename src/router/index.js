@@ -10,6 +10,7 @@ import Publish from "@/pages/Publish";
 import UserCenter from "@/pages/UserCenter";
 import HomePage from '@/pages/Home';
 import BlogDetail from '@/pages/BlogDetail';
+import NotFound from "@/pages/NotFound";
 
 const router = createBrowserRouter([
     {
@@ -52,7 +53,11 @@ const router = createBrowserRouter([
                 element: <Publish />
             }
         ]
-    }
+    },
+    {
+        path: '*',
+        element: <NotFound />
+    },
 ])
 
 export default router

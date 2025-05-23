@@ -3,26 +3,26 @@ import { request } from "@/utils/request"
 import blogList from '@/mock/blogList';
 
 // 切换此变量即可使用 mock 数据或真实接口
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 //1、新建blog 新建成功blog状态为 未发布
-export function createBlogAPI(formData) {
+export function createBlogAPI(data) {
     if (USE_MOCK) {
         // 生成一个新的唯一ID（取现有ID的最大值+1）
         const maxId = blogList.length > 0 ? Math.max(...blogList.map(blog => blog.id)) : 0;
         const newBlog = {
             id: maxId + 1,
-            title: formData.title || '新博客标题',
-            content: formData.content || '新博客内容',
-            excerpt: formData.excerpt || formData.content?.substring(0, 100) || '新博客内容',
+            title: data.title || '新博客标题',
+            content: data.content || '新博客内容',
+            excerpt: data.excerpt || data.content?.substring(0, 100) || '新博客内容',
             date: new Date().toISOString().split('T')[0],
             author: localStorage.getItem('userAccount') || 'admin',
             account: localStorage.getItem('userAccount') || 'admin',
             status: 0 // 未发布状态
         };
-        
+
         blogList.push(newBlog);
-        
+
         return Promise.resolve({
             data: {
                 data: newBlog,
@@ -33,7 +33,7 @@ export function createBlogAPI(formData) {
     return request({
         url: "/content/create",
         method: "POST",
-        formData
+        data
     })
 }
 

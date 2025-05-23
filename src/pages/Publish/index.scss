@@ -1,6 +1,8 @@
 .publish-quill {
     .ql-editor {
         min-height: 300px;
+        height: 400px; // 添加默认高度
+        overflow-y: auto; // 当内容超出高度时显示滚动条
 
         pre.ql-code-block {
             background: #2d2d2d;

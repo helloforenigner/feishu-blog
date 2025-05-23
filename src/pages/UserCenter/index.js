@@ -1,71 +1,52 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { LoadingOutlined, PlusOutlined, EditOutlined, KeyOutlined, DoubleLeftOutlined, SaveOutlined } from '@ant-design/icons';
-import { Card, message, Upload, Form, FloatButton, Modal, Input, Button } from 'antd';
+import { Card, message, Upload, Form, FloatButton, Modal, Input, Row, Col } from 'antd';
 import ImgCrop from 'antd-img-crop';
-import { getUserInfoAPI, changePasswordAPI } from '@/apis/user';
+import { getUserInfoAPI, changePasswordAPI, editUserInfoAPI, sendSmsCode } from '@/apis/user';
 import { useNavigate } from 'react-router-dom';
+import CountdownTimer from '@/components/CountdownTimer'
+import { AES_encrypt } from '@/utils/crypto'
 import './index.scss';
 
 
 
-const getBase64 = (img, callback) => {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
-};
 
-
-const beforeUpload = file => {
-    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
-    if (!isJpgOrPng) {
-        message.error('You can only upload JPG/PNG file!');
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-        message.error('Image must smaller than 2MB!');
-    }
-    return isJpgOrPng && isLt2M;
-};
 
 const UserCenter = () => {
     const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState();
+    const [imageUrl, setImageUrl] = useState('');
 
     const navigate = useNavigate();
 
-    // 编辑弹窗相关
-    const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editForm] = Form.useForm();
-    const [smsSent, setSmsSent] = useState(false);
-    const [smsCountdown, setSmsCountdown] = useState(0);
     const [editMode, setEditMode] = useState(false);
 
     // 修改密码弹窗相关
     const [pswModalOpen, setPswModalOpen] = useState(false);
     const [pswForm] = Form.useForm();
 
-    // 发送验证码
-    const sendSmsCode = async () => {
-        if (!userInfo.phone) {
-            message.error('请先输入手机号');
-            return;
+
+    //发送验证码
+    const sendCode = async () => {
+        const res = await sendSmsCode({ phone: userInfo.phone })
+        console.log(res)
+    }
+
+
+
+    // 图片上传前的校验
+    const beforeUpload = file => {
+        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isJpgOrPng) {
+            message.error('You can only upload JPG/PNG file!');
         }
-        // 假设有 sendSmsCode API
-        // await sendSmsCode(userInfo.phone);
-        setSmsSent(true);
-        setSmsCountdown(60);
-        message.success('验证码已发送');
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+            message.error('Image must smaller than 2MB!');
+        }
+        return isJpgOrPng && isLt2M;
     };
 
-    // 倒计时
-    useEffect(() => {
-        let timer;
-        if (smsCountdown > 0) {
-            timer = setTimeout(() => setSmsCountdown(smsCountdown - 1), 1000);
-        }
-        return () => clearTimeout(timer);
-    }, [smsCountdown]);
-
+    // 头像上传
     const handleChange = info => {
         if (info.file.status === 'uploading') {
             setLoading(true);
@@ -73,10 +54,23 @@ const UserCenter = () => {
         }
         if (info.file.status === 'done') {
             // Get this url from response in real world.
-            getBase64(info.file.originFileObj, url => {
+            console.log(info.file.response);
+            const url = info.file.response.data;
+            if (url) {
                 setLoading(false);
                 setImageUrl(url);
-            });
+                // 上传成功后，调用后端接口保存图片地址
+                editUserInfoAPI({
+                    picture: url,
+                    profile: userInfo.profile,
+                    name: userInfo.name
+                });
+            } else {
+                message.error('未获取到有效的图片 URL，请检查后端响应');
+            }
+        } else if (info.file.status === 'error') {
+            message.error('图片上传失败，请重试');
+            setLoading(false);
         }
     };
 
@@ -94,44 +88,79 @@ const UserCenter = () => {
         const getUserInfo = async () => {
             const res = await getUserInfoAPI();
             setUserInfo(res.data.data);
+            setImageUrl(res.data.data.picture);
         };
         getUserInfo();
     }, []);
 
-    // 编辑提交
-    const handleEditSubmit = () => {
-        editForm.validateFields().then(values => {
-            // 这里可以调用后端API进行更新
-            setUserInfo({ ...userInfo, ...values });
-            setEditModalOpen(false);
-            message.success('用户信息已更新');
+
+    // 保存用户信息（用户名、简介）
+    const handleSave = async () => {
+        // 这里可以调用后端API进行保存
+        const res = await editUserInfoAPI({
+            picture: imageUrl,
+            profile: userInfo.profile,
+            name: userInfo.name
         });
+        if (res.data.code === 1) {
+            message.success('用户信息已保存');
+            setUserInfo({ ...userInfo });
+            setEditMode(false);
+        } else {
+            message.error('用户信息保存失败');
+        }
+
     };
 
-    // 保存用户信息（手机号、简介）
-    const handleSave = () => {
-        // 这里可以调用后端API进行保存
-        message.success('用户信息已保存');
-        setUserInfo({ ...userInfo, smsCode: '' });
-        setEditMode(false);
-    };
+    //密码强度校验
+    const [password, setPassword] = useState('')
+    const checkPasswordStrength = (password) => {
+        if (password.length < 6) return 0
+
+        const patterns = [
+            /[0-9]/,       // 数字
+            /[a-z]/,       // 小写字母
+            /[A-Z]/,       // 大写字母
+            /[.!_-]/       // 特殊字符
+        ]
+
+        return patterns.reduce((strength, pattern) =>
+            pattern.test(password) ? strength + 1 : strength, 0
+        )
+    }
+
+    const passwordStrength = useMemo(() => { return checkPasswordStrength(password) }, [password])
+
+    const onChange = (e) => {
+        setPassword(e.target.value)
+        console.log(checkPasswordStrength(password))
+    }
 
     // 修改密码提交
     const handleChangePassword = async () => {
         try {
             const values = await pswForm.validateFields();
-            if (values.newPassword !== values.confirmPassword) {
-                message.error('两次输入的新密码不一致');
+            // if (values.newPassword !== values.confirmPassword) {
+            //     message.error('两次输入的新密码不一致');
+            //     return;
+            // }
+            // 调用后端API
+            //console.log(values)
+            const res = await changePasswordAPI({
+                phone: userInfo.phone,
+                smscode: values.smscode,
+                newCode: AES_encrypt(values.password)
+            });
+            if (res.data.code === 1) {
+                message.success('密码修改成功，请重新登录');
+                setPswModalOpen(false);
+                pswForm.resetFields();
+            } else {
+                message.error(res.data.msg);
                 return;
             }
-            // 调用后端API
-            await changePasswordAPI({
-                oldPassword: values.oldPassword,
-                newPassword: values.newPassword
-            });
-            message.success('密码修改成功，请重新登录');
-            setPswModalOpen(false);
-            pswForm.resetFields();
+
+
             // 可选：登出并跳转登录页
             // navigate('/login');
         } catch (err) {
@@ -144,11 +173,11 @@ const UserCenter = () => {
             <div className='avatar-box'>
                 <ImgCrop rotationSlider>
                     <Upload
-                        name="avatar"
+                        name="image"
                         listType="picture-circle"
                         className="avatar-uploader"
                         showUploadList={false}
-                        action="http://127.0.0.1:4523/m1/6306180-6001202-default/file/upload"
+                        action="http://localhost:8081/file/upload"
                         beforeUpload={beforeUpload}
                         onChange={handleChange}
                     >
@@ -174,28 +203,11 @@ const UserCenter = () => {
                 <p>用户账号：{userInfo.account}</p>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                     <span style={{ marginRight: 8 }}>手机号：</span>
-                    {editMode ? (
-                        <Input
-                            value={userInfo.phone}
-                            style={{ width: 120, marginRight: 8 }}
-                            onChange={e => setUserInfo({ ...userInfo, phone: e.target.value })}
-                            size="small"
-                        />
-                    ) : (
-                        <span style={{ width: 120, marginRight: 8 }}>{userInfo.phone}</span>
-                    )}
-                    {editMode ? (
-                        <Button
-                            size="small"
-                            onClick={() => setEditModalOpen(true)}
-                        >
-                            获取验证码
-                        </Button>
-                    ) : null}
+                    <span style={{ width: 120, marginRight: 8 }}>{userInfo.phone}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                     <span style={{ marginRight: 8 }}>注册时间：</span>
-                    <span>{userInfo.datetime}</span>
+                    <span>{userInfo.dateTime}</span>
                 </div>
             </div>
 
@@ -245,56 +257,6 @@ const UserCenter = () => {
 
         </Card>
 
-        <Modal
-            open={editModalOpen}
-            title="请输入验证码"
-            onCancel={() => setEditModalOpen(false)}
-            onOk={() => setEditModalOpen(false)}
-            okText="确定"
-            cancelText="取消"
-        >
-            <Input
-                placeholder="验证码"
-                value={userInfo.smsCode || ''}
-                onChange={e => setUserInfo({ ...userInfo, smsCode: e.target.value })}
-                style={{ width: '60%' }}
-            />
-        </Modal>
-
-        <Modal
-            open={editModalOpen}
-            title="编辑用户信息"
-            onCancel={() => setEditModalOpen(false)}
-            onOk={handleEditSubmit}
-            okText="保存"
-            cancelText="取消"
-        >
-            <Form form={editForm} initialValues={{
-                name: userInfo.name,
-                phone: userInfo.phone,
-                profile: userInfo.profile
-            }} layout="vertical">
-                {/* <Form.Item label="用户名" name="name" rules={[{ required: true, message: '请输入用户名' }]}>
-                    <Input />
-                </Form.Item> */}
-                <Form.Item label="手机号" name="phone" rules={[{ required: true, message: '请输入手机号' }]}>
-                    <Input />
-                </Form.Item>
-                <Form.Item label="验证码" name="smsCode" rules={[{ required: true, message: '请输入验证码' }]}>
-                    <Input style={{ width: '60%' }} />
-                    <Button
-                        style={{ marginLeft: 8 }}
-                        disabled={smsCountdown > 0}
-                        onClick={sendSmsCode}
-                    >
-                        {smsCountdown > 0 ? `${smsCountdown}s后重发` : '获取验证码'}
-                    </Button>
-                </Form.Item>
-                {/* <Form.Item label="用户简介" name="profile">
-                    <Input.TextArea rows={3} />
-                </Form.Item> */}
-            </Form>
-        </Modal>
 
         <Modal
             open={pswModalOpen}
@@ -305,14 +267,82 @@ const UserCenter = () => {
             cancelText="取消"
         >
             <Form form={pswForm} layout="vertical">
-                <Form.Item label="原密码" name="oldPassword" rules={[{ required: true, message: '请输入原密码' }]}>
-                    <Input.Password autoComplete="current-password" />
+                <Form.Item
+                    label="手机号"
+                    name="phone"
+                >
+                    <Input size="large" disabled={true} defaultValue={userInfo.phone} />
                 </Form.Item>
-                <Form.Item label="新密码" name="newPassword" rules={[{ required: true, message: '请输入新密码' }]}>
-                    <Input.Password autoComplete="new-password" />
+                <Form.Item
+                    label="验证码"
+                    name="smscode">
+                    <Row gutter={6}>
+                        <Col span={12}>
+                            <Input placeholder="输入验证码" />
+                        </Col>
+                        <Col span={12}>
+                            <CountdownTimer
+                                startTimerFinish={sendCode}
+                                initialSeconds={60} />
+                        </Col>
+                    </Row>
                 </Form.Item>
-                <Form.Item label="确认新密码" name="confirmPassword" rules={[{ required: true, message: '请再次输入新密码' }]}>
-                    <Input.Password autoComplete="new-password" />
+                <Form.Item
+
+                    label="新密码"
+                    name="password"
+                    validateFirst={true}
+                    rules={[{
+                        required: true,
+                        message: '请输入密码!'
+                    },
+                    {
+                        min: 6,
+                        message: '密码长度不小于6!'
+                    },
+                    {
+                        max: 16, message: '密码长度不大于16!'
+                    },
+                    {
+                        pattern: /^[a-zA-Z0-9_]+$/,
+                        message: '密码只能包含字母、数字和下划线'
+                    },
+                    // 添加自定义校验规则
+                    ({ getFieldValue }) => ({
+                        validator(_, value) {
+                            const currentPassword = value || getFieldValue('password');
+                            const strength = checkPasswordStrength(currentPassword);
+                            if (strength >= 3) {
+                                return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('密码强度过低，存在安全隐患！'));
+                        },
+                    })
+                    ]}>
+                    <Input.Password value={password} size="large" placeholder="请输入6-16位长度密码" onChange={onChange} />
+
+                </Form.Item>
+                <div className='strength-meter-bar'>
+                    <div className='strength-meter-bar--fill' data-score={passwordStrength}></div>
+                </div>
+                <Form.Item
+                    label="确认新密码"
+                    name="confirmPassword"
+                    dependencies={['password']} //当关联字段的值发生变化时，会触发校验与更新
+                    rules={[{
+                        required: true,
+                        message: '请再次输入密码!'
+                    },
+                    ({ getFieldValue }) => ({
+                        validator(_, value) {
+                            if (!value || getFieldValue('password') === value) {
+                                return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('两次输入的密码不一致，请重试！'));
+                        },
+                    }),
+                    ]}>
+                    <Input.Password size="large" placeholder="请再次输入上面的密码!" />
                 </Form.Item>
             </Form>
         </Modal>

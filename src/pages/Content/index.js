@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, ExportOutlined, ImportOutlined } from '@a
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getBlogListAPI, publishBlogAPI, deleteBlogAPI, revokeBlogAPI } from '@/apis/content'
+import { useSelector } from 'react-redux'
 import './index.scss'
 
 const { Search } = Input;
@@ -11,13 +12,14 @@ const { Search } = Input;
 
 const ContentManager = () => {
 
-
+    //从redux中获取用户信息
+    const userInfo = useSelector(state => state.user.userInfo)
 
     // 1.准备请求参数
     const [reqData, setReqData] = useState({
-        account1: '',
-        account2: '',
-        role: 0,
+        account1: userInfo.account,
+        //account2: '',
+        role: 1,
         page: 1,
         per_page: 10
     })
@@ -64,6 +66,8 @@ const ContentManager = () => {
     const [showPublishResult, setshowPublishResult] = useState(false)
 
     const handlePublishResultCancel = () => {
+        //关闭对话框时刷新blog列表
+        setReqData({ ...reqData })
         setshowPublishResult(false)
     }
 
@@ -77,6 +81,8 @@ const ContentManager = () => {
     const [showDeleteResult, setshowDeleteResult] = useState(false)
 
     const handleDeleteResultCancel = () => {
+        //关闭对话框时刷新blog列表
+        setReqData({ ...reqData })
         setshowDeleteResult(false)
     }
 
@@ -90,6 +96,8 @@ const ContentManager = () => {
     const [showRevokeResult, setshowRevokeResult] = useState(false)
 
     const handleRevokeResultCancel = () => {
+        //关闭对话框时刷新blog列表
+        setReqData({ ...reqData })
         setshowRevokeResult(false)
     }
 
@@ -105,16 +113,20 @@ const ContentManager = () => {
         {
             title: '内容标题',
             dataIndex: 'title',
-            width: 220
+            width: 260
         },
         {
             title: '正文',
             dataIndex: 'content',
-            width: 400
+            width: 900,
+            render: (data) => {
+                return <div dangerouslySetInnerHTML={{ __html: data }} />
+            }
         },
         {
             title: '内容状态',
             dataIndex: 'status',
+            width: 100,
             // data - 后端返回的状态status 根据它做条件渲染
             // render - 自定义渲染函数
             // data 0:未发布 1:已发布
@@ -122,7 +134,8 @@ const ContentManager = () => {
         },
         {
             title: '账号',
-            dataIndex: 'account'
+            dataIndex: 'account',
+            width: 150
         },
         {
             title: '操作',
@@ -211,7 +224,7 @@ const ContentManager = () => {
             </Card>
             {/* 表格区域 */}
             <Card title={'内容'}>
-                <Table rowKey="id" columns={columns} dataSource={blogList}
+                <Table className="custom-table" rowKey="id" columns={columns} dataSource={blogList}
                 />
             </Card>
             <Modal

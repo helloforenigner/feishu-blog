@@ -7,7 +7,7 @@ import {
     Input,
 } from 'antd'
 
-import { useState, useEffect, useRef, use } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import './index.scss'
 
@@ -20,7 +20,7 @@ import 'react-quill-new/dist/quill.snow.css'
 import { base64ToFile } from '@/utils/image';
 import { uploadFileAPI } from '@/apis/file';
 
-import { createBlogAPI, getBlogDetailAPI } from '@/apis/content'
+import { createBlogAPI, getBlogDetailAPI, editBlogAPI } from '@/apis/content'
 
 
 
@@ -177,7 +177,8 @@ const Publish = () => {
                         // 调用文件上传接口-将二进制图片文件上传至服务器
                         uploadFileAPI(formData).then((res) => {
                             // 将图片链接替换为服务器返回的图片链接
-                            item.insert.image = res.data.data.url
+                            console.log(res.data.data)
+                            item.insert.image = res.data.data
                             // 此方法会让用户指针回到最头部
                             quill.setContents(quilContent)
 
@@ -204,21 +205,26 @@ const Publish = () => {
 
     const onFinish = async (values) => {
         console.log(values)
+        const reqData = {
+            ...values,
+            tags: 1
+        }
         if (blogId) {
             // 编辑模式，写回 mock 数据
-            const blogList = (await import('@/mock/blogList')).default;
-            const idx = blogList.findIndex(item => String(item.id) === String(blogId));
-            if (idx !== -1) {
-                blogList[idx] = {
-                    ...blogList[idx],
-                    ...values,
-                    date: new Date().toISOString().slice(0, 10),
-                    status: 0
-                };
-            }
+            // const blogList = (await import('@/mock/blogList')).default;
+            // const idx = blogList.findIndex(item => String(item.id) === String(blogId));
+            // if (idx !== -1) {
+            //     blogList[idx] = {
+            //         ...blogList[idx],
+            //         ...values,
+            //         date: new Date().toISOString().slice(0, 10),
+            //         status: 0
+            //     };
+            // }
+            const res = await editBlogAPI(blogId, reqData)
             setShowModal(true);
         } else {
-            const res = await createBlogAPI(values)
+            const res = await createBlogAPI(reqData)
             setShowModal(true)
         }
     }
@@ -247,7 +253,9 @@ const Publish = () => {
                     <Form.Item
                         label="标题"
                         name="title"
-                        rules={[{ required: true, message: '请输入Blog标题' }]}
+                        rules={[{ required: true, message: '请输入Blog标题' },
+                        { max: 50, message: '标题长度不超过50个字符' }
+                        ]}
                     >
                         <Input onChange={handleChangeTitle} placeholder="请输入Blog标题" style={{ width: 400 }} />
                     </Form.Item>
@@ -256,8 +264,6 @@ const Publish = () => {
                         label="内容"
                         name="content"
                         rules={[{ required: true, message: '请输入Blog内容' }]}
-                        style={{ height: 240 }}
-
                     >
                         <ReactQuill
                             className="publish-quill"
