@@ -1,24 +1,14 @@
-.publish-quill {
-    .ql-editor {
-        min-height: 300px;
-
-        pre.ql-code-block {
-            background: #2d2d2d;
-            color: #ccc;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 10px 0;
-
-            code {
-                font-family: 'Fira Code', Menlo, Monaco, Consolas, "Courier New", monospace;
-                font-size: 14px;
-                line-height: 1.5;
-            }
-        }
-    }
+.slate-container pre[class^="language-"] {
+    background: #2d2d2d;
+    color: #ccc;
+    padding: 15px;
+    border-radius: 0 0 4px 4px;
+    margin: 10px 0;
+    overflow-x: auto;
 }
 
-.hljs {
-    padding: 0 !important;
-    background: transparent !important;
+.slate-container code {
+    font-family: 'Fira Code', Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.5;
 }
