@@ -37,12 +37,12 @@ body {
     align-items: center;
     padding: 1rem 2rem;
     background: $light-bg;
-    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     .navbar-brand {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         font-weight: bold;
-        color: inherit;
+        color: var(--primary-color, #409EFF);
         text-decoration: none;
     }
 
@@ -80,9 +80,13 @@ body {
 }
 
 .post-item {
-    border-bottom: 1px solid #ddd;
-    padding: 1.5rem 0;
-
+    // border-bottom: 1px solid #ddd;
+    // padding: 1.5rem 0;
+    background-color: var(--card-bg, #fff);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
     .post-title {
         margin: 0 0 0.5rem;
         font-size: 1.5rem;
