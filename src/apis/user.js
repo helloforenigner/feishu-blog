@@ -1,46 +1,75 @@
 //用户模块的API请求
-import { request } from '@/utils/request';
+import { requestY } from '@/utils/requestY';
 
-//短信验证码请求
-export function sendSmsCode(phone) {
-    return request({
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "Authorization": "APPCODE 47fc56c02eb840e8825d974da3597d85" },
-        url: '/sms/smsSend',
-        method: 'POST',
-        data: {
-            mobile: phone,
-            smsSignId: '2e65b1bb3d054466b82f0c9d125465e2',
-            templateId: '908e94ccf08b4476ba6c876d13f084ad',
-            param: '**code**:12345,**minute**:5'
-        }
+//1 短信验证码请求
+export function sendSmsCode(params) {
+    return requestY({
+        url: '/sms/send',
+        method: 'GET',
+        params
     })
 }
 
-//1、用户登录请求
-export function loginAPI(formData) {
-    return request({
+//2、用户登录请求
+export function loginAPI(data) {
+    return requestY({
         url: '/user/login',
         method: 'POST',
-        data: formData
+        data
     })
 }
 
-//2、获取用户信息
+//3、获取用户信息
 export function getUserInfoAPI() {
-    return request({
+    return requestY({
         url: '/user/center',
         method: 'GET'
     })
 }
 
-//3、修改密码
-export function changePasswordAPI({ oldPassword, newPassword }) {
-    return request({
-        url: '/user/changePassword',
-        method: 'POST',
-        data: {
-            oldPassword,
-            newPassword
-        }
+//4、修改密码
+export function changePasswordAPI(data) {
+    return requestY({
+        url: '/user/modify-psw',
+        method: 'PATCH',
+        data
     });
 }
+
+//5、用户注册
+export function registerAPI(data) {
+    return requestY({
+        url: 'user/register',
+        method: 'POST',
+        data
+    });
+}
+
+//6、用户登录时验证是否需要滑块验证码
+export function getCaptchaAPI(data) {
+    return requestY({
+        url: '/user/need-slider',
+        method: 'POST',
+        data
+    });
+}
+
+//7、滑块验证通过请求
+export function sliderVerifyPassAPI(params) {
+    return requestY({
+        url: '/user/slider-pass',
+        method: 'POST',
+        params
+    });
+}
+
+//8、编辑个人信息
+export function editUserInfoAPI(data) {
+    return requestY({
+        url: '/user/center',
+        method: 'PATCH',
+        data
+    });
+}
+
+

@@ -1,17 +1,29 @@
 import { Card, Form, Input, Button, Row, Col } from 'antd'
 import './index.scss'
 import { useNavigate } from 'react-router-dom'
-import { sendSmsCode } from '@/apis/user'
-import CountdownTimer from '../../components/CountdownTimer'
+import { sendSmsCode, registerAPI } from '@/apis/user'
+import CountdownTimer from '@/components/CountdownTimer'
 import { useMemo, useState } from 'react'
-import { AES_encrypt, AES_decrypt } from '@/utils/crypto'
+import { AES_encrypt } from '@/utils/crypto'
 
 export const Register = () => {
     const navigate = useNavigate()
     const [form] = Form.useForm();
     //密码加密解密
-    const onFinish = (values) => {
-        console.log(AES_decrypt(AES_encrypt(values.password, ''), ''))
+    const onFinish = async (values) => {
+        const { confirmPassword, ...restValues } = values;
+        const reqData = {
+            ...restValues,
+            password: AES_encrypt(values.password),
+        }
+        const res = await registerAPI(reqData)
+        if (res.data.code === 1) {
+            //注册成功 进行跳转到登录页
+            alert("注册成功")
+            navigate('/')
+        } else {
+            alert(res.data.msg)
+        }
     }
     //返回登录页
     const returnLogin = () => {
@@ -21,16 +33,14 @@ export const Register = () => {
     const sendCode = () => {
 
         const [validRes] = form.getFieldError('phone');
-        const phoneNumber = form.getFieldValue('phone')
+        const phone = form.getFieldValue('phone')
 
         if (validRes) {
             console.log(validRes)
         } else {
-            console.log(phoneNumber)
-            //sendSmsCode(phoneNumber)
+            console.log(phone)
+            sendSmsCode({ phone })
         }
-
-
     }
 
     //密码强度校验
@@ -88,13 +98,31 @@ export const Register = () => {
                     <Form.Item
                         label="账号"
                         name="account"
-                        rules={[{ required: true, message: '请输入账号!' }]}>
-                        <Input size="large" placeholder="请输入账号" />
+                        validateFirst={true}
+                        rules={[
+                            {
+                                required: true,
+                                message: '请输入账号!'
+                            },
+                            {
+                                min: 6,
+                                message: '账号长度不少于6!'
+                            },
+                            {
+                                max: 20,
+                                message: '账号长度不大于20!'
+                            }, {
+                                pattern: /^[a-zA-Z0-9_]+$/,
+                                message: '账号只能包含字母、数字和下划线'
+                            }
+                        ]}>
+                        <Input size="large" placeholder="请输入6-20位长度账号" />
                     </Form.Item>
                     <Form.Item
 
                         label="密码"
                         name="password"
+                        validateFirst={true}
                         rules={[{
                             required: true,
                             message: '请输入密码!'
@@ -104,18 +132,33 @@ export const Register = () => {
                             message: '密码长度不小于6!'
                         },
                         {
-                            max: 12, message: '密码长度不大于16!'
-                        }]}>
-                        <Input.Password value={password} size="large" placeholder="请输入密码" onChange={onChange} />
+                            max: 16, message: '密码长度不大于16!'
+                        },
+                        {
+                            pattern: /^[a-zA-Z0-9_]+$/,
+                            message: '密码只能包含字母、数字和下划线'
+                        },
+                        // 添加自定义校验规则
+                        ({ getFieldValue }) => ({
+                            validator(_, value) {
+                                const currentPassword = value || getFieldValue('password');
+                                const strength = checkPasswordStrength(currentPassword);
+                                if (strength >= 3) {
+                                    return Promise.resolve();
+                                }
+                                return Promise.reject(new Error('密码强度过低，存在安全隐患！'));
+                            },
+                        })
+                        ]}>
+                        <Input.Password value={password} size="large" placeholder="请输入6-16位长度密码" onChange={onChange} />
 
                     </Form.Item>
                     <div className='strength-meter-bar'>
                         <div className='strength-meter-bar--fill' data-score={passwordStrength}></div>
                     </div>
                     <Form.Item
-
                         label="确认密码"
-                        name="confirm-password"
+                        name="confirmPassword"
                         dependencies={['password']} //当关联字段的值发生变化时，会触发校验与更新
                         rules={[{
                             required: true,
@@ -151,7 +194,8 @@ export const Register = () => {
                         <Input size="large" placeholder="请输入手机号" />
                     </Form.Item>
                     <Form.Item
-                        label="验证码">
+                        label="验证码"
+                        name="smscode">
                         <Row gutter={6}>
                             <Col span={12}>
                                 <Input placeholder="输入验证码" />
@@ -159,7 +203,7 @@ export const Register = () => {
                             <Col span={12}>
                                 <CountdownTimer
                                     startTimerFinish={sendCode}
-                                    initialSeconds={2} />
+                                    initialSeconds={60} />
                             </Col>
                         </Row>
                     </Form.Item>

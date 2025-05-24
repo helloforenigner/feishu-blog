@@ -7,11 +7,11 @@ import {
     Input,
 } from 'antd'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import './index.scss'
 
-import { createBlogAPI, getBlogDetailAPI } from '@/apis/content'
+import { createBlogAPI, getBlogDetailAPI, editBlogAPI } from '@/apis/content'
 import SlateEditorWithHighlightAndImage from './SlateEditorWithHighlightAndImage';
 
 const Publish = () => {
@@ -75,16 +75,17 @@ const Publish = () => {
         values.content = editorContent
         if (blogId) {
             // 编辑模式，写回 mock 数据
-            const blogList = (await import('@/mock/blogList')).default;
-            const idx = blogList.findIndex(item => String(item.id) === String(blogId));
-            if (idx !== -1) {
-                blogList[idx] = {
-                    ...blogList[idx],
-                    ...values,
-                    date: new Date().toISOString().slice(0, 10),
-                    status: 0
-                };
-            }
+            // const blogList = (await import('@/mock/blogList')).default;
+            // const idx = blogList.findIndex(item => String(item.id) === String(blogId));
+            // if (idx !== -1) {
+            //     blogList[idx] = {
+            //         ...blogList[idx],
+            //         ...values,
+            //         date: new Date().toISOString().slice(0, 10),
+            //         status: 0
+            //     };
+            // }
+            const res = await editBlogAPI(blogId, reqData)
             setShowModal(true);
         } else {
             await createBlogAPI(values)

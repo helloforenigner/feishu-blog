@@ -1,10 +1,16 @@
-import { Card, Breadcrumb, Form, Input, Button, Tag, Tooltip, Table, Space, Popconfirm, Modal, Badge, Descriptions } from 'antd';
+import { Card, Breadcrumb, Form, Input, Button, Tag, Tooltip, Table, Space, Popconfirm, Modal, message } from 'antd';
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react';
-import { getAccountListAPI, getAccountDetailAPI } from '@/apis/account'
+import { getAccountListAPI, getAccountDetailAPI, operationAccountStatusAPI, createAccountAPI } from '@/apis/account'
 import UserInfo from '@/components/UserInfo'
+import { AES_encrypt, AES_decrypt } from '@/utils/crypto'
 import './index.scss'
 const { Search } = Input;
+
+const formItemLayout = {
+    labelCol: { span: 6 },
+    wrapperCol: { span: 14 },
+};
 
 const AccountManager = () => {
 
@@ -24,6 +30,9 @@ const AccountManager = () => {
             //...reqData
             const res = await getAccountListAPI(reqData)
             setAccountList(res.data.data.results)
+            if (res.data.data.results.length === 0) {
+                message.warning('未检索到账号信息')
+            }
             //console.log(res.data.data.results)
         }
         //调用函数
@@ -112,24 +121,63 @@ const AccountManager = () => {
 
 
     //6、查看明文密码
+    const [realPassword, setRealPassword] = useState('')
     const [passwordModalOpen, setPasswordModalOpen] = useState(false);
     const handlePasswordModalCancel = () => {
         setPasswordModalOpen(false)
     }
-    const showPassword = () => {
+    const showPassword = (password) => {
+        const test = AES_encrypt('G&P!E!DsYd')
+        console.log(test)
+        console.log(password)
+        console.log(AES_decrypt('G&P!E!DsYd'))
+        setRealPassword(AES_decrypt(password))
         setPasswordModalOpen(true)
         //console.log('查看明文密码')
     }
 
     // 用户管理操作
+
+
     const [showOperateResult, setShowOperateResult] = useState(false);
     const handleOperateResultCancel = () => {
         setShowOperateResult(false)
     }
 
-    const onOperateConfirm = (account, operation) => {
-        console.log(account, operation)
+    const onOperateConfirm = async (account, operate) => {
+        console.log(account, operate)
+        const res = await operationAccountStatusAPI({ account, operate })
         setShowOperateResult(true)
+    }
+
+    //管理员新建账号
+    // 定义新建账号表单实例
+    const [form] = Form.useForm();
+
+    const [createAccountModalOpen, setCreateAccountModalOpen] = useState(false);
+    const handleCreateAccountModalCancel = () => {
+        //关闭对话框时刷新account列表
+        setReqData({
+            ...reqData,
+        })
+        //清空表单
+        form.resetFields();
+
+        setCreateAccountModalOpen(false)
+    }
+    const onCreateAccountConfirm = () => {
+        //console.log('创建账号')
+        setCreateAccountModalOpen(true)
+    }
+    //提交新建账号表单
+    const onFinish = async (values) => {
+
+        //console.log(values)
+        const res = await createAccountAPI(values)
+        //console.log(res)
+        alert(res.data.message)
+        //清空表单
+        form.resetFields();
     }
 
 
@@ -157,7 +205,7 @@ const AccountManager = () => {
             render: (text) => {
                 return (
                     <Tooltip title="点击查看明文密码">
-                        <p onClick={showPassword} className='password-text'>{text}</p>
+                        <p onClick={() => showPassword(text)} className='password-text'>{text}</p>
                     </Tooltip>
                 )
             }
@@ -235,7 +283,7 @@ const AccountManager = () => {
                 <Breadcrumb.Item>账号管理</Breadcrumb.Item>
             </Breadcrumb>}>
                 <Search onSearch={onSearch} placeholder="输入账号搜索" style={{ width: 300 }} />
-                <Button type='primary' style={{ float: "right" }}>
+                <Button type='primary' style={{ float: "right" }} onClick={onCreateAccountConfirm}>
                     新建账号
                 </Button>
             </Card>
@@ -243,8 +291,9 @@ const AccountManager = () => {
             <Card>
                 <Table rowKey="id" columns={columns} dataSource={accountList} />
             </Card>
-
+            {/* 账号详情对话框 */}
             <UserInfo open={accountModalOpen} onCancel={handleAccountModalCancel} items={items} />
+            {/* 密码明文查看对话框 */}
             <Modal
                 title="账号明文密码查看"
                 closable={{ 'aria-label': 'Custom Close Button' }}
@@ -252,9 +301,9 @@ const AccountManager = () => {
                 onCancel={handlePasswordModalCancel}
                 footer={null}>
 
-                <p>1231231231</p>
+                <p>{realPassword}</p>
             </Modal>
-
+            {/* 操作提示对话框 */}
             <Modal
                 title="操作提示"
                 closable={{ 'aria-label': 'Custom Close Button' }}
@@ -266,6 +315,71 @@ const AccountManager = () => {
                     </Button>
                 ]}>
                 <p>操作成功！</p>
+            </Modal>
+            {/* 新建账号对话框 */}
+            <Modal
+                title="新建账号"
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={createAccountModalOpen}
+                onCancel={handleCreateAccountModalCancel}
+                maskClosable={false}
+                footer={null}>
+
+                <Form
+                    form={form}
+                    onFinish={onFinish}
+                    {...formItemLayout}>
+
+                    <Form.Item label="账号" name="account"
+                        rules={[
+                            {
+                                required: true,
+                                message: '请输入账号!'
+                            },
+                            {
+                                min: 6,
+                                message: '账号长度不少于6!'
+                            },
+                            {
+                                max: 20,
+                                message: '账号长度不大于20!'
+                            }, {
+                                pattern: /^[a-zA-Z0-9_]+$/,
+                                message: '账号只能包含字母、数字和下划线'
+                            }
+                        ]}>
+
+                        <Space.Compact block>
+                            <Input placeholder="请输入6-20位长度的字符账号" />
+                        </Space.Compact>
+                    </Form.Item>
+
+                    <Form.Item label="邮箱" name="email"
+                        rules={[
+                            {
+                                required: true,
+                                message: '请输入邮箱!'
+                            },
+                            {
+                                type: 'email',
+                                message: '请输入正确的邮箱'
+                            }
+                        ]}>
+                        <Space.Compact block>
+                            <Input />
+                        </Space.Compact>
+                    </Form.Item>
+
+                    <Form.Item label={null}>
+                        <Button type="primary" htmlType="submit">
+                            提交
+                        </Button>
+                        <Button style={{ marginLeft: "20px" }} key="back" onClick={handleCreateAccountModalCancel}>
+                            返回
+                        </Button>
+
+                    </Form.Item>
+                </Form>
             </Modal>
         </div>
     )

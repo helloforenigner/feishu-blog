@@ -75,7 +75,7 @@ export const BlogLayout = () => {
   return (
     <Layout>
       <Header className="header">
-        <div className='title'>Blog管理系统</div>
+        <div className='title'>blog管理系统</div>
         <div className="logo" />
         <div className="user-info">
           {role === 0 && (

@@ -41,7 +41,10 @@ const fetchLogin = (loginForm) => {
         //1.发送异步登录请求
         const res = await loginAPI(loginForm)
         //2. 提交同步action进行token的存入
-        dispatch(setToken(res.data.data.token))
+        if (res.data.code === 1) {
+            dispatch(setToken(res.data.data.token))
+        }
+        return res
     }
 }
 

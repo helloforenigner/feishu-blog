@@ -1,16 +1,22 @@
 import { Card, Form, Input, Button, Modal, message, Radio } from 'antd'
 import './index.scss'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import { useState } from 'react'
-import { loginAPI } from '@/apis/user'
+import { getCaptchaAPI, sliderVerifyPassAPI } from '@/apis/user'
 import { AES_encrypt } from '@/utils/crypto'
+import { fetchLogin } from '@/store/modules/user'
 import Slider from '@/pages/Login/components/SliderVerify'
 
 
 export const Login = () => {
     const navigate = useNavigate()
 
-    const [role, setRole] = useState('user')
+    const dispatch = useDispatch()
+
+    const [role, setRole] = useState(0)
+
+    const [accountState, setAccountState] = useState('')
 
 
     const [showModal, setShowModal] = useState(false)
@@ -52,55 +58,84 @@ export const Login = () => {
 
     //登录角色切换
     const loginRoleChange = (e) => {
-        console.log(e.target.value)
-        if (e.target.value === 'user') {
-            setRole('user')
-        } else if (e.target.value === 'admin') {
-            setRole('admin')
+        //console.log(e.target.value)
+        if (e.target.value === 0) {
+            setRole(0)
+        } else if (e.target.value === 1) {
+            setRole(1)
         }
     }
     //登录逻辑
     const onFinish = async (values) => {
         // 测试账号密码判断
-        const found = testUsers.find(u => u.account === values.account && u.password === values.password);
-        if (found) {
-            setErrorCnt(0);
-            // 存储角色到 localStorage，供 layout 页面使用
-            localStorage.setItem('userRole', found.role);
-            // 普通用户跳转 /home，超管跳转 /layout
-            if (found.role === 1 || found.role === '1') {
-                navigate('/layout');
-            } else {
-                navigate('/home');
-            }
-            return;
-        } else {
-            message.error("账号或密码错误!")
-            setErrorCnt(errorCnt + 1)
-            if (errorCnt > 3) {
-                //弹出滑块验证
-                setShowModal(true)
-                setShowSlider(true)
-            }
+        // const found = testUsers.find(u => u.account === values.account && u.password === values.password);
+        // if (found) {
+        //     setErrorCnt(0);
+        //     // 存储角色到 localStorage，供 layout 页面使用
+        //     localStorage.setItem('userRole', found.role);
+        //     // 普通用户跳转 /home，超管跳转 /layout
+        //     if (found.role === 1 || found.role === '1') {
+        //         navigate('/layout');
+        //     } else {
+        //         navigate('/home');
+        //     }
+        //     return;
+        // } else {
+        //     message.error("账号或密码错误!")
+        //     setErrorCnt(errorCnt + 1)
+        //     if (errorCnt > 3) {
+        //         //弹出滑块验证
+        //         setShowModal(true)
+        //         setShowSlider(true)
+        //     }
+        // }
+        //是否需要滑块验证操作
+        const account = values.account
+        const encrypt_password = AES_encrypt(values.password)//密码加密
+        setAccountState(account)
+        const reqData = {
+            account,
+            password: encrypt_password,
+            tags: role
         }
-        //const encrypt_password = AES_encrypt(values.password, '')//密码加密
-        //const res = await loginAPI({ ...values, password: encrypt_password, tags: 1 })
-        //console.log(res.data.data.token)
+
+        const captchaRes = await getCaptchaAPI(reqData)
+
+        if (captchaRes.data.code === 1) {
+
+            const res = await dispatch(fetchLogin({ ...values, password: encrypt_password, tags: role }))
+            if (res.data.code === 1) {
+                alert("登录成功")
+                if (role === 0) {
+                    //navigate('/home')
+                    navigate('/layout')
+                } else {
+                    navigate('/layout')
+                }
+
+            } else {
+                alert(res.data.msg)
+            }
+        } else {
+            setShowModal(true)
+            setShowSlider(true)
+        }
 
 
+        //console.log(res)
     }
 
     //滑块验证结果回调
     const resultClick = (e) => {
-        if (e == 0) {
+        if (e === 0) {
             console.log('成功');
             setTimeout(() => {
                 setShowSlider(false)
                 setVerifySuccess(true)
-
+                sliderVerifyPassAPI({ account: accountState })
             }, 600);
 
-        } else if (e == 1) {
+        } else if (e === 1) {
             console.log('失败');
         }
     }
@@ -110,10 +145,10 @@ export const Login = () => {
 
             <Card title="blog管理系统" className="login-container">
                 <Radio.Group
-                    defaultValue="user"
+                    defaultValue={0}
                     onChange={loginRoleChange}>
-                    <Radio.Button value="user">用户登录</Radio.Button>
-                    <Radio.Button value="admin">超管登录</Radio.Button>
+                    <Radio.Button value={0}>用户登录</Radio.Button>
+                    <Radio.Button value={1}>超管登录</Radio.Button>
                 </Radio.Group>
                 <Form onFinish={onFinish}>
                     <Form.Item
@@ -132,7 +167,7 @@ export const Login = () => {
                         <Button type="primary" htmlType="submit" size="large">
                             立即登录
                         </Button>
-                        {role === 'user' ? <Button onClick={register} className='register-button' type="primary" htmlType="button" size="large">
+                        {role === 0 ? <Button onClick={register} className='register-button' type="primary" htmlType="button" size="large">
                             注册
                         </Button> : null}
                     </Form.Item>
