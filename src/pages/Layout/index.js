@@ -11,6 +11,7 @@ import './index.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import { fetchUserInfo, clearUserInfo } from '@/store/modules/user'
+import userList from '@/mock/userList';
 
 const { Header, Sider } = Layout
 export const BlogLayout = () => {
@@ -40,6 +41,21 @@ export const BlogLayout = () => {
   //从redux中获取用户信息
   const userInfo = useSelector(state => state.user.userInfo)
   const name = userInfo.name
+  const account = localStorage.getItem('userAccount');
+  const currentUser = userList.find(u => u.account === account);
+  const avatarSrc = currentUser ? currentUser.avatar : '/selfimg/avatar1.jpeg';
+
+  const handleAvatarClick = (e) => {
+    e.preventDefault();
+    // 判断是否登录，假设 localStorage 里有 token 字段
+    const token = localStorage.getItem('token');
+    // if (token) {
+    //     window.location.href = '/user-center';
+    // } else {
+    //     window.location.href = '/login'; // 未登录跳转登录页
+    // }
+    window.location.href = '/user-center';
+  };
   // 优先从 localStorage 读取 role（本地模拟登录），否则用 redux
   let role = localStorage.getItem('userRole')
   if (role === null || role === undefined) {
@@ -75,7 +91,7 @@ export const BlogLayout = () => {
   return (
     <Layout>
       <Header className="header">
-        <div className='title'>blog管理系统</div>
+        <div className='title'>Blog管理系统</div>
         <div className="logo" />
         <div className="user-info">
           {role === 0 && (
@@ -87,6 +103,11 @@ export const BlogLayout = () => {
               返回首页
             </button>
           )}
+          <span className="user-avatar">
+            <a href="/user-center" className="avatar-link" aria-label="个人主页" onClick={handleAvatarClick}>
+                <img src={avatarSrc} alt="User Avatar" className="avatar" />
+            </a>
+          </span>
           <span className="user-name"><Link to="/user-center">{name}</Link></span>
           <span className="user-logout">
             <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消"

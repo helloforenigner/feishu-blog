@@ -85,7 +85,7 @@ const Publish = () => {
             //         status: 0
             //     };
             // }
-            const res = await editBlogAPI(blogId, reqData)
+            // const res = await editBlogAPI(blogId, reqData)
             setShowModal(true);
         } else {
             await createBlogAPI(values)

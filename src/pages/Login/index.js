@@ -7,8 +7,10 @@ import { getCaptchaAPI, sliderVerifyPassAPI } from '@/apis/user'
 import { AES_encrypt } from '@/utils/crypto'
 import { fetchLogin } from '@/store/modules/user'
 import Slider from '@/pages/Login/components/SliderVerify'
-
-
+import SliderCaptcha from 'rc-slider-captcha';
+import bg from 'src/assets/captcha/bg.jpg';
+import puzzle from 'src/assets/captcha/puzzle.png';
+import { inRange, sleep } from 'ut2';
 export const Login = () => {
     const navigate = useNavigate()
 
@@ -34,6 +36,14 @@ export const Login = () => {
         { account: 'user', password: '111111', role: 0 }
     ];
 
+    const verifyCaptcha = async (data) => {
+        // await sleep();
+        console.log(data);
+        if (data && inRange(data.x, 85, 95)) {
+            return Promise.resolve();
+        }
+        return Promise.reject();
+    };
     // TODO: 后期如需和后端交互获取用户信息，删除 testUsers 相关逻辑，改为调用 loginAPI，并根据后端返回的用户信息（如 role/token）进行跳转和存储。
     // 示例：
     // const res = await loginAPI(values);
@@ -125,25 +135,25 @@ export const Login = () => {
         //console.log(res)
     }
 
-    //滑块验证结果回调
-    const resultClick = (e) => {
-        if (e === 0) {
-            console.log('成功');
-            setTimeout(() => {
-                setShowSlider(false)
-                setVerifySuccess(true)
-                sliderVerifyPassAPI({ account: accountState })
-            }, 600);
+    // //滑块验证结果回调
+    // const resultClick = (e) => {
+    //     if (e === 0) {
+    //         console.log('成功');
+    //         setTimeout(() => {
+    //             setShowSlider(false)
+    //             setVerifySuccess(true)
+    //             sliderVerifyPassAPI({ account: accountState })
+    //         }, 600);
 
-        } else if (e === 1) {
-            console.log('失败');
-        }
-    }
+    //     } else if (e === 1) {
+    //         console.log('失败');
+    //     }
+    // }
 
     return (
         <div className="login">
 
-            <Card title="blog管理系统" className="login-container">
+            <Card title="Blog管理系统" className="login-container">
                 <Radio.Group
                     defaultValue={0}
                     onChange={loginRoleChange}>
@@ -186,9 +196,38 @@ export const Login = () => {
                     setShowModal(false)
                     setVerifySuccess(false)
                 }}
+                styles={{
+                    body: {
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                    },
+                }}
             >
-                <Slider showSlider={showSlider} resultClick={resultClick} />
-                {verifySuccess ? <p>验证成功，请返回继续登录！</p> : null}
+                {/* <Slider showSlider={showSlider} resultClick={resultClick} /> */}
+                <SliderCaptcha
+                    request={async () => { return { bgUrl: bg, puzzleUrl: puzzle }; }}
+                    onVerify={async (data) => {
+                        console.log(data);
+                        try {
+                            await verifyCaptcha(data); // 如果 reject，会跳转到 catch
+                            // 验证成功逻辑
+                            setTimeout(() => {
+                                setShowSlider(false)
+                                setVerifySuccess(true)
+                                sliderVerifyPassAPI({ account: accountState })
+                            }, 600);
+                            message.success('验证成功！');
+                            return Promise.resolve();
+                        } catch (error) {
+                            // 处理验证失败的情况
+                            message.error('滑块验证不通过，请重试');
+                            return Promise.reject(error); // 可选：通知组件验证失败
+                        }
+                    }}
+                />
+                {/* {verifySuccess ? <p>验证成功，请返回继续登录！</p> : null} */}
             </Modal>
         </div>
     )
