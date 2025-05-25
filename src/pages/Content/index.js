@@ -114,7 +114,7 @@ const ContentManager = () => {
         {
             title: '正文',
             dataIndex: 'content',
-            width: 900,
+            width: 500,
             render: (data) => {
                 return <div dangerouslySetInnerHTML={{ __html: data }} />
             }

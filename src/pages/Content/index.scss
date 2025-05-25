@@ -29,7 +29,7 @@
 /* 若单元格内容是富文本且需换行显示，限制显示行数 */
 .custom-table .ant-table-tbody>tr>td>div {
     display: -webkit-box;
-    -webkit-box-orient: vertical;
+    // -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     /* 限制显示行数，可按需调整 */
     overflow: hidden;
