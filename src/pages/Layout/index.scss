@@ -7,19 +7,16 @@
 }
 
 .title {
-  // font-style: italic; // 字体倾斜;
-  // font-weight: bold; // 字体加粗 可以写normal 400 500 600 700=bold 800 900
-  // font-size: 20px; // 字体大小, 默认是16px
-  // font-family: 'Courier New', Courier, monospace;//字体类型
-  font: italic bold 20px 'Courier New'; // 以上内容的简写;
-  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color, #409EFF);
+  text-decoration: none;
 
   //text-align:center;// 文本水平居中
-  text-decoration: underline; // 文本下划线;
   // text-indent: 2em;// 文本首行缩进 em=1个文字的宽度
   line-height: 50px; // 文本行高
 
-  padding-left: 50px;
+  padding-left: 2rem;
 }
 
 .logo {
@@ -54,4 +51,14 @@
 
 .ant-layout-header {
   padding: 0 !important;
+}
+.user-avatar {
+  position: relative;
+  height: 100%; /* 确保容器有高度 */
+}
+
+.avatar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
 }

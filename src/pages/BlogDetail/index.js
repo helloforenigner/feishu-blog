@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getBlogDetailAPI } from '@/apis/content';
 import blogListMock from '@/mock/blogList';
+import userList from '@/mock/userList';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/monokai-sublime.css';
 import './index.scss';
@@ -18,6 +19,9 @@ const BlogDetail = () => {
     const [darkMode, setDarkMode] = useState(() => {
         return localStorage.getItem('darkMode') === 'true';
     });
+    const account = localStorage.getItem('userAccount');
+    const currentUser = userList.find(u => u.account === account);
+    const avatarSrc = currentUser ? currentUser.avatar : '/selfimg/avatar1.jpeg';
 
     useEffect(() => {
         async function fetchBlogDetail() {
@@ -67,6 +71,18 @@ const BlogDetail = () => {
         localStorage.setItem('darkMode', darkMode);
     }, [darkMode]);
 
+    const handleAvatarClick = (e) => {
+        e.preventDefault();
+        // 判断是否登录，假设 localStorage 里有 token 字段
+        const token = localStorage.getItem('token');
+        // if (token) {
+        //     window.location.href = '/user-center';
+        // } else {
+        //     window.location.href = '/login'; // 未登录跳转登录页
+        // }
+        window.location.href = '/user-center';
+    };
+
     if (loading) {
         return <div className="blog-detail-page loading">加载中...</div>;
     }
@@ -84,6 +100,9 @@ const BlogDetail = () => {
                         <Link to="/home" className="back-btn">
                             返回首页
                         </Link>
+                        <a href="/user-center" className="avatar-link" aria-label="个人主页" onClick={handleAvatarClick}>
+                            <img src={avatarSrc} alt="User Avatar" className="avatar" />
+                        </a>
                         <button
                             className="mode-toggle"
                             onClick={() => setDarkMode(!darkMode)}
