@@ -434,7 +434,30 @@ const SlateEditorWithHighlightAndImage = ({ initialValue, onChange }) => {
         () => withTrailingParagraph(withImages(withHistory(withReact(createEditor())))),
         []
     );
-    // 上传并替换逻辑
+    // 上传
+    // if (delta_ops && delta_ops.length > 0) {
+    //     quilContent.ops.map((item) => {
+    //         if (item.insert) {
+    //             let imgStr = item.insert.image
+    //             if (imgStr && imgStr?.includes('data:image/')) {
+    //                 let file = base64ToFile(imgStr)
+    //                 console.log('files=', file)
+    //                 let formData = new FormData()
+    //                 formData.append('image', file)
+    //                 console.log('上传图片！')
+    //                 // 调用文件上传接口-将二进制图片文件上传至服务器
+    //                 uploadFileAPI(formData).then((res) => {
+    //                     // 将图片链接替换为服务器返回的图片链接
+    //                     console.log(res.data.data)
+    //                     item.insert.image = res.data.data
+    //                     // 此方法会让用户指针回到最头部
+    //                     quill.setContents(quilContent)
+
+    //                 })
+    //             }
+    //         }
+    //     })
+    // }
     const handleImageUpload = file => {
         const reader = new FileReader();
         reader.readAsDataURL(file);

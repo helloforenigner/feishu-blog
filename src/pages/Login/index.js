@@ -6,11 +6,15 @@ import { useState } from 'react'
 import { getCaptchaAPI, sliderVerifyPassAPI } from '@/apis/user'
 import { AES_encrypt } from '@/utils/crypto'
 import { fetchLogin } from '@/store/modules/user'
-import Slider from '@/pages/Login/components/SliderVerify'
+import Slider from '@/pages/Login/components/SliderVerify';
 import SliderCaptcha from 'rc-slider-captcha';
 import bg from 'src/assets/captcha/bg.jpg';
 import puzzle from 'src/assets/captcha/puzzle.png';
 import { inRange, sleep } from 'ut2';
+
+// Mock mode toggle
+const USE_MOCK = true;
+
 export const Login = () => {
     const navigate = useNavigate()
 
@@ -51,6 +55,38 @@ export const Login = () => {
     }
     //登录逻辑
     const onFinish = async (values) => {
+        // mock模式下直接登录
+        if (USE_MOCK) {
+            const account = values.account;
+            // 设置本地 token 和角色
+            localStorage.setItem('token', 'mock-token');
+            localStorage.setItem('userRole', role);
+            // 跳转页面
+            navigate(role === 1 ? '/layout' : '/layout');
+            return;
+        }
+        // 测试账号密码判断
+        // const found = testUsers.find(u => u.account === values.account && u.password === values.password);
+        // if (found) {
+        //     setErrorCnt(0);
+        //     // 存储角色到 localStorage，供 layout 页面使用
+        //     localStorage.setItem('userRole', found.role);
+        //     // 普通用户跳转 /home，超管跳转 /layout
+        //     if (found.role === 1 || found.role === '1') {
+        //         navigate('/layout');
+        //     } else {
+        //         navigate('/home');
+        //     }
+        //     return;
+        // } else {
+        //     message.error("账号或密码错误!")
+        //     setErrorCnt(errorCnt + 1)
+        //     if (errorCnt > 3) {
+        //         //弹出滑块验证
+        //         setShowModal(true)
+        //         setShowSlider(true)
+        //     }
+        // }
         //是否需要滑块验证操作
         const account = values.account
         const encrypt_password = AES_encrypt(values.password)//密码加密
