@@ -41,11 +41,13 @@ requestH.interceptors.response.use((response) => {
     // 超出 2xx 范围的状态码都会触发该函数。
     // 对响应错误做点什么
     // 监控401 token失效
-    console.dir(error)
+    //console.dir(error)
     if (error && error.response && error.response.status && error.response.status === 401) {
         removeToken()
         router.navigate('/')//跳转到登录页
-        window.location.reload()
+        //window.location.reload()
+    } else if (error && error.response && error.response.status && error.response.status === 500) {
+        alert(error.response.data.message)
     }
     return Promise.reject(error)
 })

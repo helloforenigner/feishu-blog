@@ -15,7 +15,7 @@ const userStore = createSlice({
     reducers: {
         setToken(state, action) {
             state.token = action.payload
-            //localstorage存储token
+            //sessionstorage存储token
             _setToken(action.payload)
         },
         setUserInfo(state, action) {

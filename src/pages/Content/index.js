@@ -1,4 +1,4 @@
-import { Card, Breadcrumb, Modal, Input, Button, Tag, Tooltip, Table, Space, Popconfirm } from 'antd';
+import { Card, Breadcrumb, Modal, Input, Button, Tag, Tooltip, Table, Space, Popconfirm, message } from 'antd';
 import { Link } from 'react-router-dom'
 import { EditOutlined, DeleteOutlined, ExportOutlined, ImportOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom';
@@ -15,10 +15,13 @@ const ContentManager = () => {
     //从redux中获取用户信息
     const userInfo = useSelector(state => state.user.userInfo)
 
+    let role = sessionStorage.getItem('role')
+
     // 1.准备请求参数
     const [reqData, setReqData] = useState({
         account1: userInfo.account,
         //account2: '',
+        //role: role,
         role: 1,
         page: 1,
         per_page: 10
@@ -63,48 +66,41 @@ const ContentManager = () => {
     }
 
     // 确认发布
-    const [showPublishResult, setshowPublishResult] = useState(false)
 
-    const handlePublishResultCancel = () => {
-        //关闭对话框时刷新blog列表
-        setReqData({ ...reqData })
-        setshowPublishResult(false)
-    }
 
     const onPublishConfirm = async (blogId) => {
         const res = await publishBlogAPI(blogId)
-        console.log(res)
-        setshowPublishResult(true)
+        if (res.data.code === 1) {
+            message.success('发布成功')
+        } else {
+            message.error(`发布失败，${res.data.error}`)
+        }
+        setReqData({ ...reqData })
     }
 
     // 确认删除
-    const [showDeleteResult, setshowDeleteResult] = useState(false)
 
-    const handleDeleteResultCancel = () => {
-        //关闭对话框时刷新blog列表
-        setReqData({ ...reqData })
-        setshowDeleteResult(false)
-    }
 
     const onDeletConfirm = async (blogId) => {
         const res = await deleteBlogAPI(blogId)
-        console.log(res)
-        setshowDeleteResult(true)
+        if (res.data.code === 1) {
+            message.success('删除成功')
+        } else {
+            message.error(`删除失败，${res.data.error}`)
+        }
+        setReqData({ ...reqData })
     }
 
     // 确认下架
-    const [showRevokeResult, setshowRevokeResult] = useState(false)
-
-    const handleRevokeResultCancel = () => {
-        //关闭对话框时刷新blog列表
-        setReqData({ ...reqData })
-        setshowRevokeResult(false)
-    }
 
     const onRevokeConfirm = async (blogId) => {
         const res = await revokeBlogAPI(blogId)
-        console.log(res)
-        setshowRevokeResult(true)
+        if (res.data.code === 1) {
+            message.success('下架成功')
+        } else {
+            message.error(`下架失败，${res.data.error}`)
+        }
+        setReqData({ ...reqData })
     }
 
 
@@ -214,57 +210,18 @@ const ContentManager = () => {
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>内容管理</Breadcrumb.Item>
             </Breadcrumb>}>
-
                 <Search onSearch={onSearch} placeholder="输入账号搜索" style={{ width: 300 }} />
-
                 <Button type='primary' onClick={publishBlog} htmlType="button" style={{ float: "right" }}>
                     新建Blog
                 </Button>
-
             </Card>
             {/* 表格区域 */}
             <Card title={'内容'}>
                 <Table className="custom-table" rowKey="id" columns={columns} dataSource={blogList}
                 />
             </Card>
-            <Modal
-                title="发布提示"
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                open={showPublishResult}
-                onCancel={handlePublishResultCancel}
-                footer={[
-                    <Button key="submit" type="primary" onClick={handlePublishResultCancel}>
-                        确认
-                    </Button>
-                ]}>
-                <p>您的Blog已发布！</p>
-            </Modal>
 
-            <Modal
-                title="删除提示"
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                open={showDeleteResult}
-                onCancel={handleDeleteResultCancel}
-                footer={[
-                    <Button key="submit" type="primary" onClick={handleDeleteResultCancel}>
-                        确认
-                    </Button>
-                ]}>
-                <p>Blog删除成功！</p>
-            </Modal>
 
-            <Modal
-                title="下架提示"
-                closable={{ 'aria-label': 'Custom Close Button' }}
-                open={showRevokeResult}
-                onCancel={handleRevokeResultCancel}
-                footer={[
-                    <Button key="submit" type="primary" onClick={handleRevokeResultCancel}>
-                        确认
-                    </Button>
-                ]}>
-                <p>Blog下架成功！</p>
-            </Modal>
         </div>
     )
 

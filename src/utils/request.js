@@ -16,8 +16,8 @@ request.interceptors.request.use((config) => {
     //操作这个config 注入token数据
     //1.获取token
     //2.按照后端的格式要求做token拼接
-    //const token = getToken()
-    const token = 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiYWRtaW4ifQ.'
+    const token = getToken()
+    //const token = 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiYWRtaW4ifQ.'
     if (token) {
         //此处做Token拼接
         //config.headers.Authorization = `Bearer ${token}`
@@ -42,11 +42,12 @@ request.interceptors.response.use((response) => {
     // 超出 2xx 范围的状态码都会触发该函数。
     // 对响应错误做点什么
     // 监控401 token失效
-    console.log(error)
+    //console.log(error)
     if (error && error.response && error.response.status && error.response.status === 401) {
         removeToken()
         router.navigate('/')//跳转到登录页
-        window.location.reload()
+        //window.location.reload()
+
     } else if (error && error.response && error.response.status && error.response.status === 500) {
         alert(error.response.data.message)
     }

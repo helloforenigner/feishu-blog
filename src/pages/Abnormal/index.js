@@ -19,6 +19,7 @@ import { data, Link } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { getAccountDetailAPI } from '@/apis/account'
 import { getAbnormalListAPI, getAbnormalDetailAPI, getSensitiveWordListAPI, addSensitiveWordAPI, deleteSensitiveWordAPI } from '@/apis/abnormal';
+import { operationAccountStatusAPI } from '@/apis/account'
 import { DeleteTwoTone, PlusOutlined } from '@ant-design/icons'
 import UserInfo from '@/components/UserInfo'
 //引入汉化包 时间选择器显式中文
@@ -59,8 +60,8 @@ const AbnormalDetect = () => {
         //console.log(values)
         setReqData({
             ...reqData,
-            begin_date: values.date ? values.date[0].format('YYYY-MM-DD') : '',
-            end_date: values.date ? values.date[1].format('YYYY-MM-DD') : ''
+            beginDate: values.date ? `${values.date[0].format('YYYY-MM-DD')} 00:00:00` : '',
+            endDate: values.date ? `${values.date[1].format('YYYY-MM-DD')} 00:00:00` : ''
         })
         //reqData依赖项发生变化，重复执行副作用函数
     }
@@ -160,34 +161,23 @@ const AbnormalDetect = () => {
         },
         {
             key: '3',
-            label: '标题',
-            children: abnormalInfo.title,
-            span: 3
-        },
-        {
-            key: '4',
             label: '异常描述',
             children: abnormalInfo.description,
             span: 3
         },
         {
-            key: '5',
+            key: '4',
             label: '详细异常信息',
-            children: abnormalInfo.detail,
+            children: <div dangerouslySetInnerHTML={{ __html: abnormalInfo.abnormal_detail }} />,
             span: 3
-        },
-        {
-            key: '6',
-            label: '正文',
-            children: abnormalInfo.content,
-
         }
+
     ];
 
     const showAbnormalDetail = async (id) => {
-        //const res = await getAbnormalDetailAPI(id)
-        //console.log(res)
-        //setAbnormalInfo(res.data.data)
+        const res = await getAbnormalDetailAPI(id)
+        console.log(res)
+        setAbnormalInfo(res.data.data)
         setAbnormalModalOpen(true);
 
         //console.log('查看账号详情')
@@ -200,8 +190,9 @@ const AbnormalDetect = () => {
         setShowOperateResult(false)
     }
 
-    const onOperateConfirm = (account, operation) => {
-        console.log(account, operation)
+    const onOperateConfirm = async (account, operate) => {
+        console.log(account, operate)
+        const res = await operationAccountStatusAPI({ account, operate })
         setShowOperateResult(true)
     }
 

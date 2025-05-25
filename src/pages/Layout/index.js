@@ -11,6 +11,7 @@ import './index.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
 import { fetchUserInfo, clearUserInfo } from '@/store/modules/user'
+import { logoutAPI } from '@/apis/user'
 
 const { Header, Sider } = Layout
 export const BlogLayout = () => {
@@ -32,7 +33,8 @@ export const BlogLayout = () => {
   }, [dispatch])
 
   //用户退出，返回登录页面
-  const confirm = () => {
+  const confirm = async () => {
+    await logoutAPI()
     dispatch(clearUserInfo())
     navigate('/')
   }
@@ -40,8 +42,8 @@ export const BlogLayout = () => {
   //从redux中获取用户信息
   const userInfo = useSelector(state => state.user.userInfo)
   const name = userInfo.name
-  // 优先从 localStorage 读取 role（本地模拟登录），否则用 redux
-  let role = localStorage.getItem('userRole')
+  // 优先从 sessionStorage 读取 role（本地模拟登录），否则用 redux
+  let role = sessionStorage.getItem('role')
   if (role === null || role === undefined) {
     role = userInfo.role
   } else {
@@ -57,7 +59,7 @@ export const BlogLayout = () => {
       label: '内容管理'
     }
   ]
-  if (role === 1) {
+  if (role === 1 || role === 0) {
     menuItems.push(
       {
         icon: <DiffOutlined />,

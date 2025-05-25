@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react';
 import { getAccountListAPI, getAccountDetailAPI, operationAccountStatusAPI, createAccountAPI } from '@/apis/account'
 import UserInfo from '@/components/UserInfo'
-import { AES_encrypt, AES_decrypt } from '@/utils/crypto'
+import { AES_decrypt } from '@/utils/crypto'
 import './index.scss'
 const { Search } = Input;
 
@@ -127,10 +127,6 @@ const AccountManager = () => {
         setPasswordModalOpen(false)
     }
     const showPassword = (password) => {
-        const test = AES_encrypt('G&P!E!DsYd')
-        console.log(test)
-        console.log(password)
-        console.log(AES_decrypt('G&P!E!DsYd'))
         setRealPassword(AES_decrypt(password))
         setPasswordModalOpen(true)
         //console.log('查看明文密码')

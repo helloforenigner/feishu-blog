@@ -15,7 +15,7 @@ export const getAbnormalListAPI = (params) => {
 //2、获取异常信息详情
 export const getAbnormalDetailAPI = (id) => {
     return requestH({
-        url: `/admin/users/suspicious-contents/${id}`,
+        url: `/admin/abnormal-records/${id}/detail`,
         method: "GET"
     })
 }

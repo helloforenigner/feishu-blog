@@ -9,7 +9,7 @@ export const base64ToFile = (base64, fileName = `${Math.random()}`) => {
     while (n--) {
         u8arr[n] = bstr.charCodeAt(n)
     }
-    console.log('mime-----', mime)
+    //console.log('mime-----', mime)
     return new File([u8arr], `${fileName}.${mime.split('/')[1]}`, {
         type: mime,
     })

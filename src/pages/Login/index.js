@@ -23,38 +23,9 @@ export const Login = () => {
     const [showSlider, setShowSlider] = useState(false)
     const [verifySuccess, setVerifySuccess] = useState(false)
 
-    const [errorCnt, setErrorCnt] = useState(0)
     const register = () => {
         navigate('/register')
     }
-
-    // 测试账号密码
-    const testUsers = [
-        { account: 'admin', password: '123456', role: 1 },
-        { account: 'user', password: '111111', role: 0 }
-    ];
-
-    // TODO: 后期如需和后端交互获取用户信息，删除 testUsers 相关逻辑，改为调用 loginAPI，并根据后端返回的用户信息（如 role/token）进行跳转和存储。
-    // 示例：
-    // const res = await loginAPI(values);
-    // if (res && res.data && res.data.data) {
-    //     const { role, token } = res.data.data;
-    //     localStorage.setItem('userRole', role);
-    //     localStorage.setItem('token', token);
-    //     if (role === 1 || role === '1') {
-    //         navigate('/layout');
-    //     } else {
-    //         navigate('/home');
-    //     }
-    //     return;
-    // }
-    // message.error('账号或密码错误!');
-    // setErrorCnt(errorCnt + 1);
-    // if (errorCnt > 3) {
-    //     setShowModal(true);
-    //     setShowSlider(true);
-    // }
-    // 其余 testUsers 相关代码可全部移除。
 
     //登录角色切换
     const loginRoleChange = (e) => {
@@ -62,33 +33,12 @@ export const Login = () => {
         if (e.target.value === 0) {
             setRole(0)
         } else if (e.target.value === 1) {
+
             setRole(1)
         }
     }
     //登录逻辑
     const onFinish = async (values) => {
-        // 测试账号密码判断
-        // const found = testUsers.find(u => u.account === values.account && u.password === values.password);
-        // if (found) {
-        //     setErrorCnt(0);
-        //     // 存储角色到 localStorage，供 layout 页面使用
-        //     localStorage.setItem('userRole', found.role);
-        //     // 普通用户跳转 /home，超管跳转 /layout
-        //     if (found.role === 1 || found.role === '1') {
-        //         navigate('/layout');
-        //     } else {
-        //         navigate('/home');
-        //     }
-        //     return;
-        // } else {
-        //     message.error("账号或密码错误!")
-        //     setErrorCnt(errorCnt + 1)
-        //     if (errorCnt > 3) {
-        //         //弹出滑块验证
-        //         setShowModal(true)
-        //         setShowSlider(true)
-        //     }
-        // }
         //是否需要滑块验证操作
         const account = values.account
         const encrypt_password = AES_encrypt(values.password)//密码加密
@@ -102,9 +52,10 @@ export const Login = () => {
         const captchaRes = await getCaptchaAPI(reqData)
 
         if (captchaRes.data.code === 1) {
-
             const res = await dispatch(fetchLogin({ ...values, password: encrypt_password, tags: role }))
             if (res.data.code === 1) {
+                //角色标签存储会话
+                sessionStorage.setItem('role', role)
                 alert("登录成功")
                 if (role === 0) {
                     //navigate('/home')
@@ -120,8 +71,6 @@ export const Login = () => {
             setShowModal(true)
             setShowSlider(true)
         }
-
-
         //console.log(res)
     }
 

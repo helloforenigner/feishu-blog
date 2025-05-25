@@ -109,14 +109,19 @@ const Publish = () => {
 
     // 自动保存草稿
     const saveDraft = (content) => {
-        localStorage.setItem('editorDraft', JSON.stringify(content));
+        sessionStorage.setItem('editorDraft', JSON.stringify(content));
+    }
+
+    const handleChangeTitle = (e) => {
+        //console.log(e.target.value)
+        sessionStorage.setItem('titleDraft', e.target.value);
     }
 
 
     // 加载草稿
     useEffect(() => {
-        const savedDraft = localStorage.getItem('editorDraft');
-        const savedTitle = localStorage.getItem('titleDraft');
+        const savedDraft = sessionStorage.getItem('editorDraft');
+        const savedTitle = sessionStorage.getItem('titleDraft');
         const formdata = {
             title: savedTitle,
         }
@@ -132,10 +137,7 @@ const Publish = () => {
         form.setFieldsValue(formdata)
     }, []);
 
-    const handleChangeTitle = (e) => {
-        console.log(e.target.value)
-        localStorage.setItem('titleDraft', e.target.value);
-    }
+
 
 
     const handleChangeQuill = (content, delta, source, editor) => {
@@ -228,19 +230,25 @@ const Publish = () => {
             setShowModal(true)
         }
     }
+
+    // 定义面包屑的 items 数据
+    const breadcrumbItems = [
+        {
+            title: <Link to="/layout">首页</Link>,
+        },
+        {
+            title: <Link to="/layout">内容管理</Link>,
+        },
+        {
+            title: blogId ? '编辑Blog' : '发布Blog',
+        },
+    ];
+
     return (
         <div className="publish">
             <Card
                 title={
-                    <Breadcrumb separator=">">
-                        <Breadcrumb.Item>
-                            <Link to="/layout">首页</Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>
-                            <Link to="/layout">内容管理</Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>{false ? '编辑Blog' : '发布Blog'}</Breadcrumb.Item>
-                    </Breadcrumb>
+                    <Breadcrumb separator=">" items={breadcrumbItems} />
                 }
             >
                 <Form

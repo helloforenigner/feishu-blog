@@ -72,4 +72,12 @@ export function editUserInfoAPI(data) {
     });
 }
 
+//9、用户退出登录
+export function logoutAPI() {
+    return requestY({
+        url: '/user/quit',
+        method: 'GET'
+    });
+}
+
 

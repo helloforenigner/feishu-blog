@@ -9,7 +9,6 @@ import { AES_encrypt } from '@/utils/crypto'
 export const Register = () => {
     const navigate = useNavigate()
     const [form] = Form.useForm();
-    //密码加密解密
     const onFinish = async (values) => {
         const { confirmPassword, ...restValues } = values;
         const reqData = {
