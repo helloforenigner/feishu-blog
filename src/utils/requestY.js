@@ -45,7 +45,7 @@ requestY.interceptors.response.use((response) => {
     if (error && error.response && error.response.status && error.response.status === 401) {
         removeToken()
         router.navigate('/')//跳转到登录页
-        //window.location.reload()
+        window.location.reload()
 
     } else if (error && error.response && error.response.status && error.response.status === 500) {
         alert(error.response.data.message)

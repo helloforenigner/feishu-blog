@@ -68,7 +68,7 @@ export const Login = () => {
             if (res.data.code === 1) {
                 //角色标签存储会话
                 sessionStorage.setItem('role', role)
-                alert("登录成功")
+                message.success("登录成功")
                 if (role === 0) {
                     //navigate('/home')
                     navigate('/layout')
@@ -77,7 +77,7 @@ export const Login = () => {
                 }
 
             } else {
-                alert(res.data.msg)
+                message.error(res.data.msg)
             }
         } else {
             setShowModal(true)

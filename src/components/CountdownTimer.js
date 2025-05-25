@@ -22,7 +22,7 @@ const CountdownTimer = ({ initialSeconds, endTimerFinish, startTimerFinish }) =>
         setSeconds(count);
     }, []);
     useEffect(() => {
- 
+
         const interval = setInterval(() => {
             if (seconds > 0) {
                 setSeconds(seconds - 1);
@@ -34,22 +34,31 @@ const CountdownTimer = ({ initialSeconds, endTimerFinish, startTimerFinish }) =>
                 }
                 sessionStorage.removeItem("countdown");
                 clearInterval(interval);
- 
+
             }
         }, 1000);
- 
+
         return () => clearInterval(interval);
     }, [seconds, endTimerFinish]);
- 
+
     const setcountdown = () => {
         startTimerFinish()
         setSeconds(initialSeconds)
     }
- 
+
+    //组件卸载时重置倒计时
+
+    useEffect(() => {
+        return () => {
+            setSeconds(null);
+            sessionStorage.removeItem("countdown");
+        };
+    }, []);
+
     // 将秒数转换为分钟和秒钟
     //   const minutes = Math.floor(seconds / 60);
     //   const remainingSeconds = seconds % 60;
- 
+
     return (
         <div>
             {/* <h1>倒计时</h1> */}
@@ -59,5 +68,5 @@ const CountdownTimer = ({ initialSeconds, endTimerFinish, startTimerFinish }) =>
         </div>
     );
 };
- 
+
 export default CountdownTimer;

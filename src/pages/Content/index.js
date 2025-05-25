@@ -1,4 +1,4 @@
-import { Card, Breadcrumb, Modal, Input, Button, Tag, Tooltip, Table, Space, Popconfirm, message } from 'antd';
+import { Card, Breadcrumb, Input, Button, Tag, Tooltip, Table, Space, Popconfirm, message } from 'antd';
 import { Link } from 'react-router-dom'
 import { EditOutlined, DeleteOutlined, ExportOutlined, ImportOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +21,7 @@ const ContentManager = () => {
     const [reqData, setReqData] = useState({
         account1: userInfo.account,
         //account2: '',
-        //role: role,
+        role: role,
         role: 1,
         page: 1,
         per_page: 10

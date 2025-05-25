@@ -1,4 +1,4 @@
-import { Card, Form, Input, Button, Row, Col } from 'antd'
+import { Card, Form, Input, Button, Row, Col, message, notification } from 'antd'
 import './index.scss'
 import { useNavigate } from 'react-router-dom'
 import { sendSmsCode, registerAPI } from '@/apis/user'
@@ -9,6 +9,8 @@ import { AES_encrypt } from '@/utils/crypto'
 export const Register = () => {
     const navigate = useNavigate()
     const [form] = Form.useForm();
+
+    const [countdown, setCountdown] = useState(3); // 初始化倒计时为 3 秒
     const onFinish = async (values) => {
         const { confirmPassword, ...restValues } = values;
         const reqData = {
@@ -18,10 +20,33 @@ export const Register = () => {
         const res = await registerAPI(reqData)
         if (res.data.code === 1) {
             //注册成功 进行跳转到登录页
-            alert("注册成功")
-            navigate('/')
+            const key = `register_${Date.now()}`;
+            notification.info({
+                message: '注册成功',
+                description: `${countdown} 秒后自动跳转至登录页`,
+                key,
+                duration: 0
+            });
+            const timer = setInterval(() => {
+                setCountdown(prevCountdown => {
+                    const newCountdown = prevCountdown - 1;
+                    if (newCountdown <= 0) {
+                        clearInterval(timer);
+                        notification.destroy(key);
+                        navigate('/');
+                    } else {
+                        notification.info({
+                            message: '注册成功',
+                            description: `${newCountdown} 秒后自动跳转至登录页`,
+                            key,
+                            duration: 0
+                        });
+                    }
+                    return newCountdown;
+                });
+            }, 1000);
         } else {
-            alert(res.data.msg)
+            message.error(res.data.msg)
         }
     }
     //返回登录页

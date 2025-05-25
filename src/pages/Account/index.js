@@ -142,7 +142,7 @@ const AccountManager = () => {
 
     const onOperateConfirm = async (account, operate) => {
         console.log(account, operate)
-        const res = await operationAccountStatusAPI({ account, operate })
+        await operationAccountStatusAPI({ account, operate })
         setShowOperateResult(true)
     }
 

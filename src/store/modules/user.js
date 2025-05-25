@@ -1,6 +1,7 @@
 //和用户相关的状态管理
 import { createSlice } from "@reduxjs/toolkit";
 import { setToken as _setToken, getToken, removeToken } from "@/utils/token";
+import { removeCache } from "@/utils/sessionStore";
 import { loginAPI, getUserInfoAPI } from "@/apis/user";
 
 const userStore = createSlice({
@@ -25,6 +26,9 @@ const userStore = createSlice({
             state.token = ''
             state.userInfo = {}
             removeToken()
+            //清除sessionstorage
+            removeCache()
+
         }
     }
 })

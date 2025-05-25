@@ -8,6 +8,7 @@ import {
 } from 'slate';
 import { Slate, Editable, withReact, useSlate, ReactEditor } from 'slate-react';
 import { withHistory } from 'slate-history';
+import { uploadFileAPI } from '@/apis/file'
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-python';
@@ -260,8 +261,8 @@ const ImageButton = () => {
         if (!file) return;
         const formData = new FormData();
         formData.append('image', file);
-        const res = await window.uploadFileAPI(formData);
-        insertImage(res.data.data.url);
+        const res = await uploadFileAPI(formData);
+        insertImage(res.data.data);
     };
     return (
         <>
@@ -444,8 +445,8 @@ const SlateEditorWithHighlightAndImage = ({ initialValue, onChange }) => {
             // 真正上传
             const formData = new FormData();
             formData.append('image', file);
-            window.uploadFileAPI(formData).then(res => {
-                const realUrl = res.data.data.url || res.data.data;
+            uploadFileAPI(formData).then(res => {
+                const realUrl = res.data.data
                 // 全局替换 uploading 节点
                 Transforms.setNodes(
                     editor,

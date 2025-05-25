@@ -15,8 +15,8 @@ import {
     Input,
     message
 } from 'antd';
-import { data, Link } from 'react-router-dom'
-import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { getAccountDetailAPI } from '@/apis/account'
 import { getAbnormalListAPI, getAbnormalDetailAPI, getSensitiveWordListAPI, addSensitiveWordAPI, deleteSensitiveWordAPI } from '@/apis/abnormal';
 import { operationAccountStatusAPI } from '@/apis/account'
@@ -192,7 +192,7 @@ const AbnormalDetect = () => {
 
     const onOperateConfirm = async (account, operate) => {
         console.log(account, operate)
-        const res = await operationAccountStatusAPI({ account, operate })
+        await operationAccountStatusAPI({ account, operate })
         setShowOperateResult(true)
     }
 
