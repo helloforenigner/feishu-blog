@@ -465,6 +465,8 @@ const SlateEditorWithHighlightAndImage = ({ initialValue, onChange }) => {
             const localUrl = reader.result;
             // 插入预览
             Transforms.insertNodes(editor, { type: 'image', url: localUrl, uploading: true, children: [{ text: '' }] });
+            // 插入一个空段落，以确保光标可以移到图片后面
+            Transforms.insertNodes(editor, { type: 'paragraph', children: [{ text: '' }] });
             // 真正上传
             const formData = new FormData();
             formData.append('image', file);

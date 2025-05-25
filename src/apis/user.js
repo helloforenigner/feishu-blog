@@ -52,19 +52,13 @@ export function registerAPI(data) {
 
 //6、用户登录时验证是否需要滑块验证码
 export function getCaptchaAPI(data) {
-    if (USE_MOCK) {
-        // mock: always allow login without slider
-        return Promise.resolve({ data: { code: 1 } });
-    }
+
     return requestY({ url: '/user/need-slider', method: 'POST', data });
 }
 
 //7、滑块验证通过请求
 export function sliderVerifyPassAPI(params) {
-    if (USE_MOCK) {
-        // mock: always slide pass
-        return Promise.resolve({ data: { code: 1 } });
-    }
+
     return requestY({ url: '/user/slider-pass', method: 'POST', params });
 }
 
