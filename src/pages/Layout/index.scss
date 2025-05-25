@@ -55,10 +55,15 @@
 .user-avatar {
   position: relative;
   height: 100%; /* 确保容器有高度 */
+  padding-right: 2rem;
 }
 
-.avatar {
+.avatar-admin {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.title-move{
+  transform: translateY(15%);
 }
