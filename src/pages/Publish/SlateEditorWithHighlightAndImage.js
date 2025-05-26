@@ -8,7 +8,7 @@ import {
 } from 'slate';
 import { Slate, Editable, withReact, useSlate, ReactEditor } from 'slate-react';
 import { withHistory } from 'slate-history';
-import { uploadFileAPI } from '@/apis/file'
+import { uploadFileAPI } from '../../apis/file'
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-python';
@@ -18,29 +18,91 @@ import 'prismjs/components/prism-go';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-markup';
-// 工具栏图标
-import {
-    FaBold,
-    FaItalic,
-    FaUnderline,
-    FaCode,
-    FaHeading,
-    FaListUl,
-    FaListOl,
-    FaQuoteRight,
-    FaLink,
-    FaUndo,
-    FaRedo,
-    FaImage,
-} from 'react-icons/fa';
+import { FaBold, FaItalic, FaUnderline, FaCode, FaHeading, FaListUl, FaListOl, FaQuoteRight, FaLink, FaUndo, FaRedo, FaImage } from 'react-icons/fa';
+
+// Simple HTML serializer (matching Quill output)
+const escapeHtml = str =>
+    str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function serializeNode(node) {
+    if (Text.isText(node)) {
+        let text = escapeHtml(node.text);
+        if (node.bold) text = `<strong>${text}</strong>`;
+        if (node.italic) text = `<em>${text}</em>`;
+        if (node.underline) text = `<u>${text}</u>`;
+        return text;
+    }
+    const children = node.children.map(n => serializeNode(n)).join('');
+    switch (node.type) {
+        case 'paragraph':
+            return `<p>${children || '<br/>'}</p>`;
+        case 'code-block':
+            return `<pre><code>${children}</code></pre>`;
+        case 'bulleted-list':
+            return `<ul>${children}</ul>`;
+        case 'numbered-list':
+            return `<ol>${children}</ol>`;
+        case 'list-item':
+            return `<li>${children}</li>`;
+        case 'link':
+            return `<a href="${node.url}">${children}</a>`;
+        case 'image':
+            return `<p><img src="${node.url}"/></p>`;
+        default:
+            return children;
+    }
+}
+
+// HTML deserializer to convert Quill-style HTML into Slate nodes
+function deserializeHTML(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const { body } = doc;
+    return Array.from(body.childNodes).flatMap(deserializeElement);
+}
+
+function deserializeElement(el) {
+    if (el.nodeType === Node.TEXT_NODE) {
+        return [{ text: el.textContent }];
+    }
+    if (el.nodeName === 'BR') {
+        return [{ text: '\n' }];
+    }
+    const children = Array.from(el.childNodes).flatMap(deserializeElement);
+    switch (el.nodeName) {
+        case 'P':
+            return [{ type: 'paragraph', children: children.length ? children : [{ text: '' }] }];
+        case 'PRE':
+            const codeEl = el.querySelector('code');
+            const text = codeEl ? codeEl.textContent : el.textContent;
+            return [{ type: 'code-block', children: [{ text }] }];
+        case 'UL':
+            return [{ type: 'bulleted-list', children: children }];
+        case 'OL':
+            return [{ type: 'numbered-list', children: children }];
+        case 'LI':
+            return [{ type: 'list-item', children: children }];
+        case 'A':
+            return [{ type: 'link', url: el.getAttribute('href'), children: children }];
+        case 'IMG':
+            return [{ type: 'image', url: el.getAttribute('src'), children: [{ text: '' }] }];
+        case 'STRONG':
+            return children.map(n => ({ ...n, bold: true }));
+        case 'EM':
+            return children.map(n => ({ ...n, italic: true }));
+        case 'U':
+            return children.map(n => ({ ...n, underline: true }));
+        default:
+            return children;
+    }
+}
 
 // 支持图片节点
-const withImages = (editor) => {
+const withImages = editor => {
     const { isVoid } = editor;
-    editor.isVoid = (element) =>
-        element.type === 'image' ? true : isVoid(element);
+    editor.isVoid = element => element.type === 'image' ? true : isVoid(element);
     return editor;
 };
+
 // 插件：确保文档末尾不是 code-block，用户可在最后追加段落退出代码块
 const withTrailingParagraph = editor => {
     const { normalizeNode } = editor;
@@ -262,11 +324,20 @@ const ImageButton = () => {
         const formData = new FormData();
         formData.append('image', file);
         const res = await uploadFileAPI(formData);
+        // 插入图片节点
         insertImage(res.data.data);
+        // 插入一个空段落，确保光标跳到图片下方
+        Transforms.insertNodes(editor, { type: 'paragraph', children: [{ text: '' }] });
     };
     return (
         <>
-            <input id="slate-image-upload" type="file" accept="image/*" style={{ display: 'none' }} onChange={onChange} />
+            <input
+                id="slate-image-upload"
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={onChange}
+            />
             <label htmlFor="slate-image-upload" style={{ cursor: 'pointer', margin: '0 8px' }}>
                 <FaImage />
             </label>
@@ -421,15 +492,23 @@ const base64ToFile = (dataUrl, filename = 'image.png') => {
 };
 
 const SlateEditorWithHighlightAndImage = ({ initialValue, onChange }) => {
-    // 动态加载 Prism 主题以匹配系统深/浅模式
+    // Prism theme
     React.useEffect(() => {
         if (window.matchMedia) {
             const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             import(`prismjs/themes/${dark ? 'prism-tomorrow' : 'prism'}.css`);
         }
     }, []);
-    // 使用受控 value 确保 placeholder 在空内容时生效
-    const value = initialValue || [{ type: 'paragraph', children: [{ text: '' }] }];
+
+    // parse incoming HTML or fallback to empty paragraph
+    const value = useMemo(() => {
+        if (typeof initialValue === 'string') {
+            const nodes = deserializeHTML(initialValue);
+            return nodes.length ? nodes : [{ type: 'paragraph', children: [{ text: '' }] }];
+        }
+        return initialValue || [{ type: 'paragraph', children: [{ text: '' }] }];
+    }, [initialValue]);
+
     const editor = useMemo(
         () => withTrailingParagraph(withImages(withHistory(withReact(createEditor())))),
         []
@@ -493,7 +572,11 @@ const SlateEditorWithHighlightAndImage = ({ initialValue, onChange }) => {
                 editor={editor}
                 initialValue={value}
                 value={value}
-                onChange={newVal => onChange && onChange(newVal)}
+                onChange={newVal => {
+                    const htmlString = newVal.map(n => serializeNode(n)).join('');
+                    console.log('Slate serialized HTML:', htmlString);
+                    onChange && onChange(htmlString);
+                }}
             >
                 <Toolbar />
                 <Editable
@@ -547,4 +630,5 @@ const SlateEditorWithHighlightAndImage = ({ initialValue, onChange }) => {
     );
 };
 
+export { serializeNode, deserializeHTML };
 export default SlateEditorWithHighlightAndImage;

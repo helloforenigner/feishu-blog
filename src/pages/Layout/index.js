@@ -100,24 +100,19 @@ export const BlogLayout = () => {
         <div className="logo" />
         <div className="user-info">
           {/* {role === 0 && ( */}
-            <button
-              className="back-home-btn"
-              style={{ marginRight: 16, padding: '4px 12px', borderRadius: 6, border: 'none', background: '#409EFF', color: '#fff', cursor: 'pointer', fontSize: 14 }}
-              onClick={() => navigate('/home')}
-            >
-              返回首页
-            </button>
-<<<<<<< HEAD
-          )}
-          {role === 0 && <span className="user-avatar">
-=======
+          <button
+            className="back-home-btn"
+            style={{ marginRight: 16, padding: '4px 12px', borderRadius: 6, border: 'none', background: '#409EFF', color: '#fff', cursor: 'pointer', fontSize: 14 }}
+            onClick={() => navigate('/home')}
+          >
+            返回首页
+          </button>
           {/* )} */}
           <span className="user-avatar">
->>>>>>> 9448ee7283b21cc37fe0a15ff7101308bdc427c9
             <a href="/user-center" className="avatar-link" aria-label="个人主页" onClick={handleAvatarClick}>
               <img src={avatarSrc} alt="User Avatar" className="avatar" />
             </a>
-          </span>}
+          </span>
           <span className="user-name"><Link to="/user-center">{name}</Link></span>
           <span className="user-logout">
             <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消"
