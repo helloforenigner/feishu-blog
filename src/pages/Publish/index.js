@@ -65,6 +65,7 @@ const Publish = () => {
 
     // 表单提交
     const [showModal, setShowModal] = useState(false)
+    const role = sessionStorage.getItem('role')
 
     const handleCancel = () => {
         setShowModal(false)
@@ -79,17 +80,10 @@ const Publish = () => {
     const onFinish = async (values) => {
         values.content = editorContent
         if (blogId) {
-            // 编辑模式，写回 mock 数据
-            // const blogList = (await import('@/mock/blogList')).default;
-            // const idx = blogList.findIndex(item => String(item.id) === String(blogId));
-            // if (idx !== -1) {
-            //     blogList[idx] = {
-            //         ...blogList[idx],
-            //         ...values,
-            //         date: new Date().toISOString().slice(0, 10),
-            //         status: 0
-            //     };
-            // }
+            const reqData = {
+                ...values,
+                tags: role,
+            }
             await editBlogAPI(blogId, reqData)
             setShowModal(true);
         } else {

@@ -52,9 +52,12 @@
 .ant-layout-header {
   padding: 0 !important;
 }
+
 .user-avatar {
   position: relative;
-  height: 100%; /* 确保容器有高度 */
+  margin-right: 30px;
+  height: 100%;
+  /* 确保容器有高度 */
 }
 
 .avatar {

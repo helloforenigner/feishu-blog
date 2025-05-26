@@ -15,14 +15,13 @@ const ContentManager = () => {
     //从redux中获取用户信息
     const userInfo = useSelector(state => state.user.userInfo)
 
-    let role = sessionStorage.getItem('role')
+    const role = sessionStorage.getItem('role')
 
     // 1.准备请求参数
     const [reqData, setReqData] = useState({
         account1: userInfo.account,
         //account2: '',
         role: role,
-        role: 1,
         page: 1,
         per_page: 10
     })
@@ -138,6 +137,7 @@ const ContentManager = () => {
             render: data => {
                 return (
                     <Space size="middle">
+                        {/* 状态为 未发布 可以进行发布操作 */}
                         {data.status === 0 ?
                             <Tooltip title="发布blog">
                                 <Popconfirm
@@ -150,8 +150,8 @@ const ContentManager = () => {
                                     <Button id="publish-button" type="primary" shape="circle" icon={<ExportOutlined />} />
                                 </Popconfirm>
                             </Tooltip> : null}
-
-                        {(data.status === 1 && (<Tooltip title="下架blog">
+                        {/* 状态为 已发布 且 角色为管理员 才可以进行下架操作 */}
+                        {data.status === 1 && role === '1' && (<Tooltip title="下架blog">
                             <Popconfirm
                                 title="下架blog"
                                 description="确认要下架该条blog吗?"
@@ -167,14 +167,13 @@ const ContentManager = () => {
                                     icon={<ImportOutlined />}
                                 />
                             </Popconfirm>
-                        </Tooltip>))}
-
-
-                        <Tooltip title="编辑blog">
+                        </Tooltip>)}
+                        {/* 状态为 未发布 可以进行编辑操作 */}
+                        {data.status === 0 && (<Tooltip title="编辑blog">
                             <Button onClick={() => navigate(`/layout/publish?id=${data.id}`)} type="primary" shape="circle" icon={<EditOutlined />} />
-                        </Tooltip>
-
-                        <Tooltip title="删除blog">
+                        </Tooltip>)}
+                        {/* 状态为 未发布 且 角色为管理员 才可以进行删除操作 */}
+                        {data.status === 0 && (<Tooltip title="删除blog">
                             <Popconfirm
                                 title="删除blog"
                                 description="确认要删除该条blog吗?"
@@ -189,7 +188,8 @@ const ContentManager = () => {
                                     icon={<DeleteOutlined />}
                                 />
                             </Popconfirm>
-                        </Tooltip>
+                        </Tooltip>)}
+
                     </Space>
                 )
             }
@@ -210,7 +210,7 @@ const ContentManager = () => {
                 </Breadcrumb.Item>
                 <Breadcrumb.Item>内容管理</Breadcrumb.Item>
             </Breadcrumb>}>
-                <Search onSearch={onSearch} placeholder="输入账号搜索" style={{ width: 300 }} />
+                {role === '1' && (<Search onSearch={onSearch} placeholder="输入账号搜索" style={{ width: 300 }} />)}
                 <Button type='primary' onClick={publishBlog} htmlType="button" style={{ float: "right" }}>
                     新建Blog
                 </Button>

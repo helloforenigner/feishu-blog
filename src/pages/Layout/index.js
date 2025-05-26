@@ -78,7 +78,7 @@ export const BlogLayout = () => {
       label: '内容管理'
     }
   ]
-  if (role === 1 || role === 0) {
+  if (role === 1) {
     menuItems.push(
       {
         icon: <DiffOutlined />,
@@ -108,11 +108,11 @@ export const BlogLayout = () => {
               返回首页
             </button>
           )}
-          <span className="user-avatar">
+          {role === 0 && <span className="user-avatar">
             <a href="/user-center" className="avatar-link" aria-label="个人主页" onClick={handleAvatarClick}>
               <img src={avatarSrc} alt="User Avatar" className="avatar" />
             </a>
-          </span>
+          </span>}
           <span className="user-name"><Link to="/user-center">{name}</Link></span>
           <span className="user-logout">
             <Popconfirm title="是否确认退出？" okText="退出" cancelText="取消"
