@@ -96,10 +96,10 @@ export const BlogLayout = () => {
   return (
     <Layout>
       <Header className="header">
-        <div className='title'>Blog管理系统</div>
+        <div className='title title-move' >Blog管理系统</div>
         <div className="logo" />
         <div className="user-info">
-          {role === 0 && (
+          {/* {role === 0 && ( */}
             <button
               className="back-home-btn"
               style={{ marginRight: 16, padding: '4px 12px', borderRadius: 6, border: 'none', background: '#409EFF', color: '#fff', cursor: 'pointer', fontSize: 14 }}
@@ -107,8 +107,13 @@ export const BlogLayout = () => {
             >
               返回首页
             </button>
+<<<<<<< HEAD
           )}
           {role === 0 && <span className="user-avatar">
+=======
+          {/* )} */}
+          <span className="user-avatar">
+>>>>>>> 9448ee7283b21cc37fe0a15ff7101308bdc427c9
             <a href="/user-center" className="avatar-link" aria-label="个人主页" onClick={handleAvatarClick}>
               <img src={avatarSrc} alt="User Avatar" className="avatar" />
             </a>

@@ -3,7 +3,7 @@ import { request } from "@/utils/request"
 import blogList from '@/mock/blogList';
 
 // 切换此变量即可使用 mock 数据或真实接口
-export const USE_MOCK = false;
+export const USE_MOCK = true;
 
 //1、新建blog 新建成功blog状态为 未发布
 export function createBlogAPI(data) {
