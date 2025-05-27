@@ -32,19 +32,17 @@ const Publish = () => {
 
     // 初始化状态时从 localStorage 读取草稿
     const [showModal, setShowModal] = useState(false)
-    const [editorContent, setEditorContent] = useState(() => {
-        const saved = sessionStorage.getItem('editorDraft')
-        return saved ? JSON.parse(saved) : DEFAULT_NODES
-    })
-    const [titleDraft, setTitleDraft] = useState(() => sessionStorage.getItem('titleDraft') || "")
+    // 默认 Slate 节点和标题状态，初始挂载后再决定是否加载本地草稿
+    const [editorContent, setEditorContent] = useState(DEFAULT_NODES)
+    const [titleDraft, setTitleDraft] = useState("")
     const role = sessionStorage.getItem('role')
 
     // 添加保存状态提示
     const [saveStatus, setSaveStatus] = useState('');
     const saveTimerRef = useRef(null);
 
-    // 使用 ref 跟踪当前是否是编辑模式
-    const isEditMode = useRef(!!blogId)
+    // 使用 ref 跟踪当前是否是编辑模式，初始都当作新建处理
+    const isEditMode = useRef(false)
 
     // 自动保存草稿的防抖函数
     const saveDraftDebounced = useCallback(
@@ -180,40 +178,40 @@ const Publish = () => {
         saveDraftDebounced(editorContent, titleDraft)
     }, [editorContent, titleDraft, saveDraftDebounced])
 
-    // 处理模式切换和初始数据加载
+    // 首次挂载时，如果是新建模式则加载本地草稿
     useEffect(() => {
+        if (!blogId) {
+            const saved = sessionStorage.getItem('editorDraft');
+            const title = sessionStorage.getItem('titleDraft') || "";
+            if (saved || title) {
+                const nodes = saved ? JSON.parse(saved) : DEFAULT_NODES;
+                setEditorContent(nodes);
+                setTitleDraft(title);
+                form.setFieldsValue({ title, content: nodes });
+            }
+        }
+    }, []);
+
+    // 根据 blogId 切换新建/编辑模式
+    useEffect(() => {
+        const fetchDetail = async () => {
+            const res = await getBlogDetailAPI(blogId);
+            console.log('【fetchDetail result】', res.data);
+            const data = res.data.data;
+            const nodes = deserializeHTML(data.content);
+            console.log('deserialized nodes:', nodes)
+            setEditorContent(nodes);
+            setTitleDraft(data.title);
+            form.setFieldsValue({ title: data.title, content: nodes });
+        };
         if (blogId) {
-            // 从新建切换到编辑模式时清除草稿
-            if (!isEditMode.current) {
-                clearAllDrafts();
-            }
-            // 拉取编辑内容并填充
-            const fetchDetail = async () => {
-                const res = await getBlogDetailAPI(blogId)
-                const data = res.data.data
-                const nodes = deserializeHTML(data.content)
-                setEditorContent(nodes)
-                setTitleDraft(data.title)
-                form.setFieldsValue({ title: data.title, content: nodes })
-            }
-            fetchDetail()
-            isEditMode.current = true
+            // 进入编辑模式时清除本地草稿并拉取后台数据
+            clearAllDrafts();
+            fetchDetail();
+            isEditMode.current = true;
         } else {
-            // 从编辑切换到新建模式时清除草稿并重置
-            if (isEditMode.current) {
-                clearAllDrafts();
-            } else {
-                // 新建博客时检查是否应该使用草稿
-                const shouldUseDraft = sessionStorage.getItem('shouldUseDraft');
-                if (shouldUseDraft !== 'true') {
-                    // 如果不应该使用草稿，则清除所有草稿
-                    clearAllDrafts();
-                } else {
-                    // 使用一次后删除标记，确保下次进入时不会重用相同的草稿
-                    sessionStorage.removeItem('shouldUseDraft');
-                }
-            }
-            isEditMode.current = false
+            // 切换到新建模式，仅重置编辑模式标记，不清草稿
+            isEditMode.current = false;
         }
     }, [blogId, form]);
 
@@ -392,6 +390,7 @@ const Publish = () => {
                     >
                         <div className="slate-container">
                             <SlateEditorWithHighlightAndImage
+                                key={blogId || 'new'}
                                 value={editorContent}
                                 onChange={value => {
                                     setEditorContent(value);
