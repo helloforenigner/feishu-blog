@@ -33,10 +33,10 @@ const Publish = () => {
     // 初始化状态时从 localStorage 读取草稿
     const [showModal, setShowModal] = useState(false)
     const [editorContent, setEditorContent] = useState(() => {
-        const saved = localStorage.getItem('editorDraft')
+        const saved = sessionStorage.getItem('editorDraft')
         return saved ? JSON.parse(saved) : DEFAULT_NODES
     })
-    const [titleDraft, setTitleDraft] = useState(() => localStorage.getItem('titleDraft') || "")
+    const [titleDraft, setTitleDraft] = useState(() => sessionStorage.getItem('titleDraft') || "")
     const role = sessionStorage.getItem('role')
 
     // 添加保存状态提示
@@ -53,8 +53,8 @@ const Publish = () => {
             setSaveStatus('正在保存草稿...')
 
             try {
-                localStorage.setItem('editorDraft', JSON.stringify(content))
-                localStorage.setItem('titleDraft', title)
+                sessionStorage.setItem('editorDraft', JSON.stringify(content))
+                sessionStorage.setItem('titleDraft', title)
 
                 // 保存成功后更新状态
                 setSaveStatus('已自动保存草稿')
@@ -89,17 +89,17 @@ const Publish = () => {
                 timestamp
             };
 
-            localStorage.setItem('editorDraft', JSON.stringify(editorContent));
-            localStorage.setItem('titleDraft', titleDraft);
+            sessionStorage.setItem('editorDraft', JSON.stringify(editorContent));
+            sessionStorage.setItem('titleDraft', titleDraft);
 
             // 保存额外的版本历史 (最多保留5个版本)
             const historyKey = `editorDraft_history_${Date.now()}`;
-            localStorage.setItem(historyKey, JSON.stringify(saveData));
+            sessionStorage.setItem(historyKey, JSON.stringify(saveData));
 
             // 获取所有历史版本键
             const allKeys = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
                 if (key.startsWith('editorDraft_history_')) {
                     allKeys.push(key);
                 }
@@ -108,7 +108,7 @@ const Publish = () => {
             // 如果历史版本超过5个，删除最旧的
             if (allKeys.length > 5) {
                 allKeys.sort();
-                localStorage.removeItem(allKeys[0]);
+                sessionStorage.removeItem(allKeys[0]);
             }
 
             message.success('草稿已手动保存');
@@ -121,8 +121,8 @@ const Publish = () => {
     // 恢复到上一个保存点
     const restoreDraft = () => {
         try {
-            const savedContent = localStorage.getItem('editorDraft');
-            const savedTitle = localStorage.getItem('titleDraft');
+            const savedContent = sessionStorage.getItem('editorDraft');
+            const savedTitle = sessionStorage.getItem('titleDraft');
 
             if (savedContent && savedTitle) {
                 const parsedContent = JSON.parse(savedContent);
@@ -145,20 +145,20 @@ const Publish = () => {
     // 清除所有草稿数据
     const clearAllDrafts = () => {
         // 清除基本草稿
-        localStorage.removeItem('editorDraft');
-        localStorage.removeItem('titleDraft');
+        sessionStorage.removeItem('editorDraft');
+        sessionStorage.removeItem('titleDraft');
 
         // 清除所有历史版本草稿
         const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
             if (key.startsWith('editorDraft_history_')) {
                 keysToRemove.push(key);
             }
         }
 
         // 分开移除，避免在迭代过程中修改集合
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        keysToRemove.forEach(key => sessionStorage.removeItem(key));
 
         // 重置编辑器状态
         setEditorContent(DEFAULT_NODES);
@@ -204,13 +204,13 @@ const Publish = () => {
                 clearAllDrafts();
             } else {
                 // 新建博客时检查是否应该使用草稿
-                const shouldUseDraft = localStorage.getItem('shouldUseDraft');
+                const shouldUseDraft = sessionStorage.getItem('shouldUseDraft');
                 if (shouldUseDraft !== 'true') {
                     // 如果不应该使用草稿，则清除所有草稿
                     clearAllDrafts();
                 } else {
                     // 使用一次后删除标记，确保下次进入时不会重用相同的草稿
-                    localStorage.removeItem('shouldUseDraft');
+                    sessionStorage.removeItem('shouldUseDraft');
                 }
             }
             isEditMode.current = false
@@ -252,8 +252,8 @@ const Publish = () => {
     // 定义首页链接处理函数，在跳转前询问是否清除草稿
     const handleHomeLink = (e) => {
         // 检查是否有未保存的变更
-        const savedContent = localStorage.getItem('editorDraft');
-        const savedTitle = localStorage.getItem('titleDraft');
+        const savedContent = sessionStorage.getItem('editorDraft');
+        const savedTitle = sessionStorage.getItem('titleDraft');
 
         if (savedContent || savedTitle) {
             e.preventDefault();
@@ -288,8 +288,8 @@ const Publish = () => {
         // 处理浏览器关闭/刷新的情况
         const handleBeforeUnload = (e) => {
             // 检查是否有草稿
-            const savedContent = localStorage.getItem('editorDraft');
-            const savedTitle = localStorage.getItem('titleDraft');
+            const savedContent = sessionStorage.getItem('editorDraft');
+            const savedTitle = sessionStorage.getItem('titleDraft');
 
             if (savedContent || savedTitle) {
                 // 显示标准的"确认离开"对话框
@@ -330,8 +330,8 @@ const Publish = () => {
 
     // 检查是否有草稿存在
     const hasDrafts = () => {
-        const content = localStorage.getItem('editorDraft');
-        const title = localStorage.getItem('titleDraft');
+        const content = sessionStorage.getItem('editorDraft');
+        const title = sessionStorage.getItem('titleDraft');
         return !!(content || title);
     };
 
@@ -360,7 +360,7 @@ const Publish = () => {
                                 value={titleDraft}
                                 onChange={e => {
                                     setTitleDraft(e.target.value);
-                                    localStorage.setItem('titleDraft', e.target.value);
+                                    sessionStorage.setItem('titleDraft', e.target.value);
                                     form.setFieldsValue({ title: e.target.value });
                                 }}
                                 placeholder="请输入Blog标题"

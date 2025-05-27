@@ -35,7 +35,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    height: 64px;
+    /* 固定导航栏高度 */
+    padding: 0 2rem;
+    /* 水平内边距 */
     background: $light-bg;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
@@ -87,6 +90,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
+
     .post-title {
         margin: 0 0 0.5rem;
         font-size: 1.5rem;

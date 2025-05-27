@@ -4,6 +4,9 @@
 
 .header {
   padding: 0;
+  display: flex;
+  align-items: center;
+  height: 64px;
 }
 
 .title {
@@ -11,9 +14,6 @@
   font-weight: bold;
   color: var(--primary-color, #409EFF);
   text-decoration: none;
-
-  //text-align:center;// 文本水平居中
-  // text-indent: 2em;// 文本首行缩进 em=1个文字的宽度
   line-height: 50px; // 文本行高
 
   padding-left: 2rem;
@@ -29,42 +29,57 @@
 }
 
 .user-info {
-  position: absolute;
-  right: 0;
-  top: 0;
+  display: flex;
+  align-items: center;
+  /* 垂直居中 */
+  margin-left: auto;
+  /* 将用户信息推到右侧 */
   padding-right: 20px;
   color: #fff;
+}
 
-  .user-name {
-    margin-right: 20px;
+.back-home-btn {
+  margin-right: 16px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #409EFF;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  height: fit-content;
+}
 
-    a {
-      color: #fff;
-    }
-  }
+.user-avatar {
+  display: flex;
+  align-items: center;
+  padding-right: 0rem;
+}
 
-  .user-logout {
-    display: inline-block;
-    cursor: pointer;
-  }
+.avatar-link {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  margin: 0 20px;
+}
+
+.user-logout {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .ant-layout-header {
   padding: 0 !important;
-}
-
-.user-avatar {
-  position: relative;
-  height: 100%;
-  /* 确保容器有高度 */
-  padding-right: 2rem;
-
-}
-
-.avatar-admin {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 .title-move {

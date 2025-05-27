@@ -11,7 +11,10 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 2rem;
+        height: 64px;
+        /* 固定导航栏高度 */
+        padding: 0 2rem;
+        /* 水平内边距，垂直居中 */
         background-color: var(--header-bg, #fff);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
