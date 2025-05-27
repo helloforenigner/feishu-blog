@@ -43,6 +43,8 @@ const Publish = () => {
 
     // 使用 ref 跟踪当前是否是编辑模式，初始都当作新建处理
     const isEditMode = useRef(false)
+    // 编辑页加载状态，只有 fetch 完成后才显示 SlateEditor
+    const [loaded, setLoaded] = useState(!blogId)
 
     // 自动保存草稿的防抖函数
     const saveDraftDebounced = useCallback(
@@ -203,6 +205,7 @@ const Publish = () => {
             setEditorContent(nodes);
             setTitleDraft(data.title);
             form.setFieldsValue({ title: data.title, content: nodes });
+            setLoaded(true);
         };
         if (blogId) {
             // 进入编辑模式时清除本地草稿并拉取后台数据
@@ -389,14 +392,16 @@ const Publish = () => {
                         style={{ height: '100%' }}
                     >
                         <div className="slate-container">
-                            <SlateEditorWithHighlightAndImage
-                                key={blogId || 'new'}
-                                value={editorContent}
-                                onChange={value => {
-                                    setEditorContent(value);
-                                    form.setFieldsValue({ content: value });
-                                }}
-                            />
+                            {loaded && (
+                                <SlateEditorWithHighlightAndImage
+                                    key={blogId || 'new'}
+                                    value={editorContent}
+                                    onChange={value => {
+                                        setEditorContent(value);
+                                        form.setFieldsValue({ content: value });
+                                    }}
+                                />
+                            )}
                         </div>
                     </Form.Item>
                 </Form>
