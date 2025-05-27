@@ -18,6 +18,7 @@
     "axios": "^1.9.0",
     "crypto-js": "^4.2.0",
     "highlight.js": "^11.11.1",
+    "lodash.debounce": "^4.0.8",
     "prismjs": "^1.30.0",
     "quill": "^2.0.3",
     "quill-markdown": "^2.1.2",
